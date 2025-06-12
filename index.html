@@ -576,13 +576,14 @@
     }
 
     function speakWord(text, explicitLang = null) {
+      // Strip parenthesized content (e.g. pinyin) before speaking
+      const clean = text.replace(/[（(][^）)]+[）)]/g, '').trim();
       if (!window.speechSynthesis) return;
-      const langCode = explicitLang || detectLang(text);
-      const utter = new SpeechSynthesisUtterance(text);
+      const langCode = explicitLang || detectLang(clean);
+      const utter = new SpeechSynthesisUtterance(clean);
       utter.lang = langCode;
       utter.rate = 0.95;
       utter.pitch = 1.0;
-      // User-selected voice overrides
       const savedName = localStorage.getItem('selectedVoice');
       if (savedName) {
         const savedV = speechSynthesis.getVoices().find(v => v.name === savedName);
@@ -658,6 +659,23 @@
     }
 
     function openModal(word, idx) {
+      // Prepare separated examples and pinyin
+      const fromExample = word[fromLang + '_example'];
+      const toExample = word[toLang + '_example'];
+      // Generate from-language TTS button
+      const ttsFrom = `<button class="tts-btn" data-sentence="${fromExample.replace(/"/g,'&quot;')}" data-lang="${fromLang==='en'?'en-US':'zh-CN'}" title="Read example">🔊</button>`;
+      // Extract pinyin if present in parentheses
+      const pinyinMatch = toExample.match(/[（(]([^）)]+)[）)]/);
+      const toText = toExample.replace(/[（(][^）)]+[）)]/g, '').trim();
+      const ttsTo = `<button class="tts-btn" data-sentence="${toText.replace(/"/g,'&quot;')}" data-lang="${toLang==='en'?'en-US':'zh-CN'}" title="Read example">🔊</button>`;
+      const pinyinHtml = pinyinMatch ? `<div class="pinyin">（${pinyinMatch[1]}）</div>` : '';
+      const examplesHtml = `
+        <div id="examplesSection">
+          <b>Example:</b><br>
+          ${fromExample}${ttsFrom}<br>
+          ${toText}${ttsTo}
+          ${pinyinHtml}
+        </div>`;
       // Pronunciation buttons in modal
       let pronBtnEN = `<button class="pronounce-btn" data-word="${word.en}" data-lang="en-US" title="Pronounce">🔊</button>`;
       let pronBtnZH = `<button class="pronounce-btn" data-word="${word.zh}" data-lang="zh-CN" title="Pronounce">🔊</button>`;
@@ -689,11 +707,7 @@
           <span>${word[fromLang + '_def']}</span>
           <br><span style="color:#3852e2;">${word[toLang + '_def']}</span>
         </div>
-        <div id="examplesSection">
-          <b>Example:</b><br>
-          ${word[fromLang + '_example']}<button class="tts-btn" data-sentence="${word[fromLang + '_example'].replace(/"/g,'&quot;')}" data-lang="${fromLang==='en'?'en-US':'zh-CN'}" title="Read example">🔊</button>
-          <br><span style="color:#3852e2;">${word[toLang + '_example']}<button class="tts-btn" data-sentence="${word[toLang + '_example'].replace(/"/g,'&quot;')}" data-lang="${toLang==='en'?'en-US':'zh-CN'}" title="Read example">🔊</button></span>
-        </div>
+        ${examplesHtml}
         <button class="load-examples-btn" style="margin-top:var(--space-sm);">Load More Examples</button>
         <hr style="margin:var(--space-sm) 0 var(--space-xs) 0;">
         ${chatHtml}
