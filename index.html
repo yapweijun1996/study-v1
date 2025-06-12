@@ -561,7 +561,6 @@
     // Language detection (simple)
     function detectLang(text) {
       if (/[一-龥]/.test(text)) return 'zh';
-      // Detect non-ASCII for other languages (e.g. Malay)
       if (/[^ -]/.test(text)) return 'ms';
       return 'en';
     }
