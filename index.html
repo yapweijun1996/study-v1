@@ -47,9 +47,25 @@
       flex-direction: column;
       gap: 0.6rem;
       position: relative;
+      border: 2px solid transparent;
     }
     .card:hover {
       box-shadow: 0 8px 24px #3852e244;
+      border: 2px solid #3852e2;
+      background: #f6f8ff;
+    }
+    .card:focus {
+      outline: none;
+      border: 2px solid #3852e2;
+      background: #f6f8ff;
+    }
+    .card-chevron {
+      position: absolute;
+      right: 1.2rem;
+      top: 1.2rem;
+      font-size: 1.3rem;
+      color: #3852e2;
+      pointer-events: none;
     }
     .word-row {
       display: flex;
@@ -350,17 +366,12 @@
           <div style="font-size:0.98rem;color:#444;">
             <b>Example:</b> ${word[fromLang + '_example']}
           </div>
-          <button class="expand-btn" data-idx="${idx}">Learn More</button>
+          <span class="card-chevron">&#8594;</span>
         `;
         // Pronunciation button
         card.querySelector('.pronounce-btn').onclick = (e) => {
           e.stopPropagation();
           speakWord(pronWord, pronLang);
-        };
-        // Expand (modal)
-        card.querySelector('.expand-btn').onclick = (e) => {
-          e.stopPropagation();
-          openModal(word, idx);
         };
         card.onclick = () => openModal(word, idx);
         cardList.appendChild(card);
