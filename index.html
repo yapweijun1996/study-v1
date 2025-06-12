@@ -560,8 +560,9 @@
 
     // Language detection (simple)
     function detectLang(text) {
+      // Chinese detection
       if (/[一-龥]/.test(text)) return 'zh';
-      if (/[^ -]/.test(text)) return 'ms';
+      // Default to English
       return 'en';
     }
 
