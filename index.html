@@ -577,6 +577,54 @@
       if (saved) voiceSelect.value = saved;
     }
 
+    // Function to load more examples for a word
+    async function loadMoreExamples(word) {
+      const wordKey = word.en + '|examples';
+      const btn = modalContent.querySelector('.load-examples-btn');
+      const examplesDiv = modalContent.querySelector('#examplesSection');
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
+      // Compose prompt for 3 more examples
+      const prompt = `Generate 3 additional example sentences using the word "${word.en}" (Chinese: ${word.zh}). Provide English and Chinese versions for each, and format as a JSON array of objects with keys en_example and zh_example.`;
+      try {
+        const session = await startChatSession(selectedModel, wordKey);
+        const result = await session.sendMessage(prompt);
+        let text = '';
+        if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts) {
+          text = result.candidates[0].content.parts.map(p => p.text).join('\n');
+        }
+        // Extract JSON
+        const start = text.indexOf('[');
+        const end = text.lastIndexOf(']');
+        if (start === -1 || end === -1) throw new Error('No JSON found');
+        const jsonStr = text.substring(start, end + 1);
+        const data = JSON.parse(jsonStr);
+        data.forEach(item => {
+          // English example
+          const enDiv = document.createElement('div');
+          enDiv.style.cssText = 'font-size:0.98rem;color:#444;display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;';
+          enDiv.innerHTML = `${item.en_example} <button class="tts-btn" data-sentence="${item.en_example.replace(/"/g,'&quot;')}" data-lang="en-US" title="Read example">🔊</button>`;
+          examplesDiv.appendChild(enDiv);
+          // Chinese example
+          const zhDiv = document.createElement('div');
+          zhDiv.style.cssText = 'font-size:0.98rem;color:#3852e2;display:flex;align-items:center;gap:0.5rem;';
+          zhDiv.innerHTML = `${item.zh_example} <button class="tts-btn" data-sentence="${item.zh_example.replace(/"/g,'&quot;')}" data-lang="zh-CN" title="Read example">🔊</button>`;
+          examplesDiv.appendChild(zhDiv);
+        });
+        // Attach tts handlers for new buttons
+        examplesDiv.querySelectorAll('.tts-btn').forEach(btn => {
+          btn.onclick = () => speakWord(btn.dataset.sentence, btn.dataset.lang);
+        });
+        btn.disabled = false;
+        btn.textContent = 'Load More Examples';
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Load More Examples';
+        console.error(err);
+        alert('Error loading more examples: ' + err.message);
+      }
+    }
+
     function openModal(word, idx) {
       // Pronunciation buttons in modal
       let pronBtnEN = `<button class="pronounce-btn" data-word="${word.en}" data-lang="en-US" title="Pronounce">🔊</button>`;
@@ -598,23 +646,24 @@
       }
       modalContent.innerHTML = `
         <button class="close-btn" title="Close">&times;</button>
-        <div style="font-size:1.28rem;font-weight:600;margin-bottom:0.1rem;">
+        <div style="font-size:1.28rem;font-weight:600;margin-bottom:var(--space-xs);">
           ${word.en} ${pronBtnEN} / ${word.zh} ${pronBtnZH}
         </div>
-        <div style="font-size:1rem;color:#888;margin-bottom:0.4rem;">
+        <div style="font-size:1rem;color:#888;margin-bottom:var(--space-sm);">
           [${word.en_pron}] / [${word.zh_pron}]
         </div>
-        <div style="margin-bottom:0.6rem;">
+        <div style="margin-bottom:var(--space-sm);">
           <b>Definition:</b><br>
           <span>${word[fromLang + '_def']}</span>
           <br><span style="color:#3852e2;">${word[toLang + '_def']}</span>
         </div>
-        <div>
-          <b>Example:</b>
-          <br>${word[fromLang + '_example']}
-          <br><span style="color:#3852e2;">${word[toLang + '_example']}</span>
+        <div id="examplesSection">
+          <b>Example:</b><br>
+          ${word[fromLang + '_example']}<button class="tts-btn" data-sentence="${word[fromLang + '_example'].replace(/"/g,'&quot;')}" data-lang="${fromLang==='en'?'en-US':'zh-CN'}" title="Read example">🔊</button>
+          <br><span style="color:#3852e2;">${word[toLang + '_example']}<button class="tts-btn" data-sentence="${word[toLang + '_example'].replace(/"/g,'&quot;')}" data-lang="${toLang==='en'?'en-US':'zh-CN'}" title="Read example">🔊</button></span>
         </div>
-        <hr style="margin:1.1rem 0 0.7rem 0;">
+        <button class="load-examples-btn" style="margin-top:var(--space-sm);">Load More Examples</button>
+        <hr style="margin:var(--space-sm) 0 var(--space-xs) 0;">
         ${chatHtml}
         <label for="askAiInput">Ask AI about this word</label>
         <input id="askAiInput" placeholder="Type your question..." autocomplete="off" />
@@ -630,15 +679,24 @@
           speakWord(btn.dataset.word, btn.dataset.lang);
         };
       });
+      // TTS for existing examples
+      modalContent.querySelectorAll('#examplesSection .tts-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          speakWord(btn.dataset.sentence, btn.dataset.lang);
+        };
+      });
+      // Load more examples button
+      modalContent.querySelector('.load-examples-btn').onclick = () => loadMoreExamples(word);
       // Ask AI
       const input = modalContent.querySelector('#askAiInput');
       const sendBtn = modalContent.querySelector('#sendBtn');
-      sendBtn.onclick = () => {
+      sendBtn.addEventListener('click', () => {
         const question = input.value.trim();
         askAiAboutWord(word, question);
         input.value = '';
         input.focus();
-      };
+      });
       // Allow Enter key to send AI message
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
