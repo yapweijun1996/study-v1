@@ -181,7 +181,6 @@
         <option value="gemini-2.0-flash">gemini-2.0-flash</option>
         <option value="gemma-3-27b-it">gemma-3-27b-it</option>
       </select>
-      <input id="apiKeyInput" type="password" placeholder="Gemini API Key" style="width:140px;margin-left:0.5rem;" />
     </div>
   </div>
   <div class="container">
@@ -254,19 +253,13 @@
     const modalBg = document.getElementById('modalBg');
     const modalContent = document.getElementById('modalContent');
     const modelSelect = document.getElementById('modelSelect');
-    const apiKeyInput = document.getElementById('apiKeyInput');
 
     // Initialize model and API key input
     modelSelect.value = selectedModel;
-    apiKeyInput.value = apiKey;
 
     modelSelect.onchange = () => {
       selectedModel = modelSelect.value;
       sessionStorage.setItem('geminiModel', selectedModel);
-    };
-    apiKeyInput.onchange = () => {
-      apiKey = apiKeyInput.value;
-      sessionStorage.setItem('geminiApiKey', apiKey);
     };
 
     // Gemini API config
@@ -514,8 +507,37 @@
     // Modal close on background click
     modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
 
-    // Initialize
-    renderCards();
+    // --- Auto-generate vocabData using Gemini AI on load ---
+    async function generateVocabDataWithAI() {
+      // Compose prompt for Gemini
+      const prompt = `Generate a list of 10 English words with their Chinese translations, IPA pronunciations, definitions, and example sentences in both languages. Format as a JSON array with keys: en, zh, en_pron, zh_pron, en_def, zh_def, en_example, zh_example.`;
+      try {
+        const session = await startChatSession(selectedModel, '__vocabgen__');
+        const result = await session.sendMessage(prompt);
+        let text = '';
+        if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts) {
+          text = result.candidates[0].content.parts.map(p => p.text).join('\n');
+        }
+        // Try to extract JSON from the response
+        let jsonStart = text.indexOf('[');
+        let jsonEnd = text.lastIndexOf(']');
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          let jsonStr = text.substring(jsonStart, jsonEnd + 1);
+          let data = JSON.parse(jsonStr);
+          if (Array.isArray(data) && data.length > 0) {
+            vocabData = data;
+            renderCards();
+            return;
+          }
+        }
+        throw new Error('Could not parse vocab list from AI response.');
+      } catch (err) {
+        cardList.innerHTML = `<div style="padding:2rem;text-align:center;color:#c00;">Failed to load vocabulary from AI.<br>${err.message || err}</div>`;
+      }
+    }
+
+    // Initialize: auto-generate vocabData using AI
+    generateVocabDataWithAI();
   </script>
 </body>
 </html>
