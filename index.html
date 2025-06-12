@@ -301,6 +301,12 @@
       </select>
       <label for="voiceSelect">Voice:</label>
       <select id="voiceSelect"></select>
+      <label for="levelSelect">Level:</label>
+      <select id="levelSelect">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
     </div>
   </section>
   <main class="container">
@@ -364,7 +370,7 @@
     let fromLang = localStorage.getItem('fromLang') || 'en';
     let toLang = localStorage.getItem('toLang') || 'zh';
     let selectedModel = localStorage.getItem('geminiModel') || 'gemini-2.0-flash';
-    // Per-word chat history: { [wordKey]: [messages] }
+    let selectedLevel = localStorage.getItem('selectedLevel') || 'easy';
     let chatHistory = {};
 
     // Elements
@@ -527,6 +533,14 @@
     document.getElementById('voiceSelect').addEventListener('change', e => {
       localStorage.setItem('selectedVoice', e.target.value);
     });
+    // Initialize level selector
+    const levelSelect = document.getElementById('levelSelect');
+    levelSelect.value = selectedLevel;
+    levelSelect.onchange = e => {
+      selectedLevel = e.target.value;
+      localStorage.setItem('selectedLevel', selectedLevel);
+      // TODO: trigger AI vocab regeneration by difficulty
+    };
 
     function speakWord(word, lang) {
       if (!window.speechSynthesis) return;
