@@ -159,6 +159,17 @@
     .chat-msg { margin-bottom: 0.5rem; padding: 0.5rem 0.8rem; border-radius: 0.7rem; }
     .user-msg { background: #e4eafd; text-align: right; }
     .ai-msg { background: #f0f4fe; text-align: left; }
+    .dot {
+      display: inline-block; width: 8px; height: 8px; margin: 0 2px;
+      background: #3852e2; border-radius: 50%; opacity: 0.6;
+      animation: bounce 1s infinite alternate;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      from { transform: translateY(0);}
+      to { transform: translateY(-8px);}
+    }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
 </head>
@@ -421,6 +432,10 @@
         const input = modalContent.querySelector('#askAiInput');
         askAiAboutWord(word, input.value);
       };
+      // Allow Enter key to send AI message
+      modalContent.querySelector('#askAiInput').onkeydown = (e) => {
+        if (e.key === "Enter") modalContent.querySelector('#sendBtn').click();
+      };
       modalBg.style.display = '';
       setTimeout(() => modalContent.querySelector('#askAiInput').focus(), 250);
     }
@@ -462,7 +477,7 @@
         return;
       }
       replyDiv.style.display = '';
-      replyDiv.textContent = "Thinking...";
+      replyDiv.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
       // Compose prompt
       const prompt = `You are an AI language tutor. The user is asking about the word "${word.en}" (Chinese: ${word.zh}). Provide a helpful, clear answer.\n\nWord details:\n- English: ${word.en}\n- Chinese: ${word.zh}\n- English definition: ${word.en_def}\n- Chinese definition: ${word.zh_def}\n- English example: ${word.en_example}\n- Chinese example: ${word.zh_example}\n\nUser question: ${question}`;
       // Use a unique key for the word (en+zh)
