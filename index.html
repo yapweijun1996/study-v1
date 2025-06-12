@@ -73,8 +73,8 @@
     }
     .card-list {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-md);
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-sm);
     }
     .card {
       background: #fff;
@@ -108,7 +108,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 1.2rem;
+      font-size: clamp(1rem, 2vw + 1rem, 1.2rem);
       font-weight: 500;
     }
     .pronounce-btn {
@@ -234,21 +234,14 @@
       .header { padding: var(--space-sm) var(--space-sm); }
       .ai-toolbar { padding: 0 var(--space-sm); }
     }
-    /* Tablets: two-column cards */
-    @media (min-width: 768px) {
+    /* Grid gap adjustments */
+    @media (min-width: 640px) {
       .container { max-width: 720px; }
-      .card-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-md);
-      }
+      .card-list { gap: var(--space-md); }
     }
-    /* Desktops: three-column cards */
     @media (min-width: 1024px) {
       .container { max-width: 960px; }
-      .card-list {
-        grid-template-columns: repeat(3, 1fr);
-      }
+      .card-list { gap: var(--space-lg); }
     }
     .chat-history { margin-bottom: 1rem; max-height: 180px; overflow-y: auto; }
     .chat-msg { margin-bottom: 0.5rem; padding: 0.5rem 0.8rem; border-radius: 0.7rem; }
