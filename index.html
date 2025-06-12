@@ -570,6 +570,8 @@
       });
     }
     loadVoices();
+    // Initial population of voice dropdown
+    populateVoiceList();
     speechSynthesis.onvoiceschanged = () => { loadVoices(); populateVoiceList(); };
 
     // Language detection (simple)
