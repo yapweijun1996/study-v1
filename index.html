@@ -226,6 +226,20 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    .ai-toolbar {
+      max-width: 480px;
+      margin: 1.2rem auto 0 auto;
+      padding: 0 1rem;
+    }
+    .loader-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.2);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
 </head>
@@ -244,8 +258,11 @@
         <option value="zh">中文</option>
         <option value="en">English</option>
       </select>
-      <!-- Gemini Model Selector and API Key Input -->
-      <label for="modelSelect" style="margin-left:1.5rem;">Model:</label>
+    </div>
+  </div>
+  <div class="ai-toolbar">
+    <div style="background:#fff;border-radius:1rem;padding:1rem 1.2rem;box-shadow:0 2px 12px #0001;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+      <label for="modelSelect">Model:</label>
       <select id="modelSelect">
         <option value="gemini-2.0-flash">gemini-2.0-flash</option>
         <option value="gemma-3-27b-it">gemma-3-27b-it</option>
@@ -618,18 +635,16 @@
 
     // --- Auto-generate vocabData using Gemini AI on load ---
     async function generateVocabDataWithAI() {
-      // Show loader, hide card list
-      cardList.style.display = 'none';
-      let loaderDiv = document.getElementById('mainLoader');
-      if (!loaderDiv) {
-        loaderDiv = document.createElement('div');
-        loaderDiv.id = 'mainLoader';
-        loaderDiv.className = 'loader';
-        loaderDiv.innerHTML = '<div class="spinner"></div>';
-        cardList.parentNode.insertBefore(loaderDiv, cardList);
-      } else {
-        loaderDiv.style.display = '';
+      // Show full-screen loader overlay
+      let loaderBg = document.getElementById('loaderBg');
+      if (!loaderBg) {
+        loaderBg = document.createElement('div');
+        loaderBg.id = 'loaderBg';
+        loaderBg.className = 'loader-bg';
+        loaderBg.innerHTML = '<div class="spinner"></div>';
+        document.body.appendChild(loaderBg);
       }
+      loaderBg.style.display = 'flex';
       // Compose prompt for Gemini
       const prompt = `Generate a list of 10 English words with their Chinese translations, IPA pronunciations, definitions, and example sentences in both languages. Format as a JSON array with keys: en, zh, en_pron, zh_pron, en_def, zh_def, en_example, zh_example.`;
       try {
@@ -647,16 +662,14 @@
           let data = JSON.parse(jsonStr);
           if (Array.isArray(data) && data.length > 0) {
             vocabData = data;
-            loaderDiv.style.display = 'none';
-            cardList.style.display = '';
+            loaderBg.style.display = 'none';
             renderCards(true);
             return;
           }
         }
         throw new Error('Could not parse vocab list from AI response.');
       } catch (err) {
-        loaderDiv.style.display = 'none';
-        cardList.style.display = '';
+        loaderBg.style.display = 'none';
         cardList.innerHTML = `<div style=\"padding:2rem;text-align:center;color:#c00;\">Failed to load vocabulary from AI.<br>${err.message || err}</div>`;
       }
     }
