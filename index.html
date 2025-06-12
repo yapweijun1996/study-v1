@@ -20,11 +20,13 @@
       color: #fff;
       font-size: 1.3rem;
       letter-spacing: 1px;
+      flex-wrap: wrap;
     }
     .lang-select {
       display: flex;
       gap: 1rem;
       align-items: center;
+      flex-wrap: wrap;
     }
     .container {
       max-width: 480px;
@@ -173,7 +175,23 @@
     }
     @media (max-width: 600px) {
       .container { margin: 1rem 0; }
-      .header { flex-direction: column; gap: 0.8rem; }
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+        padding: 0.7rem 0.5rem;
+        font-size: 1.08rem;
+      }
+      .lang-select {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.7rem;
+      }
+      .lang-select label,
+      .lang-select select {
+        width: 100%;
+        max-width: 100%;
+      }
     }
     .chat-history { margin-bottom: 1rem; max-height: 180px; overflow-y: auto; }
     .chat-msg { margin-bottom: 0.5rem; padding: 0.5rem 0.8rem; border-radius: 0.7rem; }
