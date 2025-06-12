@@ -21,31 +21,6 @@
       --primary: #3852e2;
       --card-shadow: 0 4px 16px #0001;
     }
-    /* Dark mode via system preference */
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #121212;
-        --text: #e0e0e0;
-        --card-bg: #1e1e1e;
-        --primary: #90caf9;
-        --card-shadow: 0 4px 16px rgba(0,0,0,0.5);
-      }
-    }
-    /* Theme override via data-theme attribute */
-    :root[data-theme='light'] {
-      --bg: #f7f7f9;
-      --text: #222;
-      --card-bg: #fff;
-      --primary: #3852e2;
-      --card-shadow: 0 4px 16px #0001;
-    }
-    :root[data-theme='dark'] {
-      --bg: #121212;
-      --text: #e0e0e0;
-      --card-bg: #1e1e1e;
-      --primary: #90caf9;
-      --card-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    }
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -1032,14 +1007,6 @@
       <span class="text-sm font-medium">Voice</span>
       <select id="voiceSelect" class="w-full mt-1 px-2 py-1 border rounded"></select>
     </label>
-    <label class="block mb-3">
-      <span class="text-sm font-medium">Theme</span>
-      <select id="themeSelect" class="w-full mt-1 px-2 py-1 border rounded">
-        <option value="system">System</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
-    </label>
     <div class="flex justify-end gap-2 mt-6">
       <button id="cancelBtn" class="px-3 py-1 rounded bg-gray-200">Cancel</button>
       <button id="saveBtn" class="px-3 py-1 rounded bg-blue-600 text-white">Save</button>
@@ -1084,7 +1051,6 @@
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const prefs = {
         level: document.getElementById('levelSelect').value,
-        theme: document.getElementById('themeSelect').value,
         from: document.getElementById('lang1').value,
         to: document.getElementById('lang2').value,
         model: document.getElementById('modelSelect').value,
@@ -1096,17 +1062,16 @@
     });
 
     (async () => {
-      const prefs = await idbGet('prefs') || { level: 'easy', theme: 'system', from: 'en', to: 'zh', model: 'gemini-2.0-flash', voice: localStorage.getItem('selectedVoice') || 'Daniel' };
+      const prefs = await idbGet('prefs') || { level: 'easy', from: 'en', to: 'zh', model: 'gemini-2.0-flash', voice: localStorage.getItem('selectedVoice') || 'Daniel' };
       document.getElementById('levelSelect').value = prefs.level;
       document.getElementById('lang1').value = prefs.from;
       document.getElementById('lang2').value = prefs.to;
       document.getElementById('modelSelect').value = prefs.model;
       document.getElementById('voiceSelect').value = prefs.voice;
-      document.getElementById('themeSelect').value = prefs.theme;
       applyPrefs(prefs);
     })();
 
-    function applyPrefs({ level, theme, from, to, model, voice }) {
+    function applyPrefs({ level, from, to, model, voice }) {
       selectedLevel = level;
       localStorage.setItem('selectedLevel', level);
       // Apply language/model/voice
@@ -1118,12 +1083,6 @@
       localStorage.setItem('geminiModel', model);
       voiceSelect.value = voice;
       localStorage.setItem('selectedVoice', voice);
-      // Theme override
-      if (theme === 'system') {
-        document.documentElement.removeAttribute('data-theme');
-      } else {
-        document.documentElement.setAttribute('data-theme', theme);
-      }
       setTimeout(() => renderCards(true), 0);
     }
   </script>
