@@ -153,6 +153,10 @@
       .container { margin: 1rem 0; }
       .header { flex-direction: column; gap: 0.8rem; }
     }
+    .chat-history { margin-bottom: 1rem; max-height: 180px; overflow-y: auto; }
+    .chat-msg { margin-bottom: 0.5rem; padding: 0.5rem 0.8rem; border-radius: 0.7rem; }
+    .user-msg { background: #e4eafd; text-align: right; }
+    .ai-msg { background: #f0f4fe; text-align: left; }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
 </head>
@@ -368,6 +372,21 @@
       // Pronunciation buttons in modal
       let pronBtnEN = `<button class="pronounce-btn" data-word="${word.en}" data-lang="en-US" title="Pronounce">🔊</button>`;
       let pronBtnZH = `<button class="pronounce-btn" data-word="${word.zh}" data-lang="zh-CN" title="Pronounce">🔊</button>`;
+      // Unique key for chat history
+      const wordKey = word.en + '|' + word.zh;
+      // Render chat history for this word
+      let chatHtml = '';
+      if (chatHistory[wordKey] && chatHistory[wordKey].length > 0) {
+        chatHtml = '<div class="chat-history">' + chatHistory[wordKey].map(msg => {
+          if (msg.role === 'user') {
+            return `<div class="chat-msg user-msg"><b>You:</b> ${msg.parts.map(p => p.text).join('')}</div>`;
+          } else if (msg.role === 'model') {
+            return `<div class="chat-msg ai-msg"><b>AI:</b> ${msg.parts.map(p => p.text).join('')}</div>`;
+          } else {
+            return '';
+          }
+        }).join('') + '</div>';
+      }
       modalContent.innerHTML = `
         <button class="close-btn" title="Close">&times;</button>
         <div style="font-size:1.28rem;font-weight:600;margin-bottom:0.1rem;">
@@ -387,6 +406,7 @@
           <br><span style="color:#3852e2;">${word[toLang + '_example']}</span>
         </div>
         <hr style="margin:1.1rem 0 0.7rem 0;">
+        ${chatHtml}
         <label for="askAiInput">Ask AI about this word</label>
         <input id="askAiInput" placeholder="Type your question..." autocomplete="off" />
         <button class="send-btn" id="sendBtn">Send</button>
@@ -408,6 +428,26 @@
       };
       modalBg.style.display = '';
       setTimeout(() => modalContent.querySelector('#askAiInput').focus(), 250);
+    }
+
+    // Helper to re-render chat history in modal after new message
+    function updateChatHistoryInModal(word) {
+      const wordKey = word.en + '|' + word.zh;
+      const chatDiv = modalContent.querySelector('.chat-history');
+      if (!chatDiv) return;
+      if (chatHistory[wordKey] && chatHistory[wordKey].length > 0) {
+        chatDiv.innerHTML = chatHistory[wordKey].map(msg => {
+          if (msg.role === 'user') {
+            return `<div class="chat-msg user-msg"><b>You:</b> ${msg.parts.map(p => p.text).join('')}</div>`;
+          } else if (msg.role === 'model') {
+            return `<div class="chat-msg ai-msg"><b>AI:</b> ${msg.parts.map(p => p.text).join('')}</div>`;
+          } else {
+            return '';
+          }
+        }).join('');
+      } else {
+        chatDiv.innerHTML = '';
+      }
     }
 
     function closeModal() {
@@ -443,6 +483,8 @@
           reply = "Sorry, no response from Gemini.";
         }
         replyDiv.textContent = reply;
+        // Update chat history display in modal
+        updateChatHistoryInModal(word);
       }).catch(err => {
         replyDiv.textContent = "Error: " + (err.message || err);
       });
