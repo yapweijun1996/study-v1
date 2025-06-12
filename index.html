@@ -284,6 +284,9 @@
       background: #fff; z-index: 20;
     }
     .ai-toolbar.open { transform: translateY(0); }
+    /* Backdrop for bottom-sheet toolbar */
+    .toolbar-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s ease; z-index: 15; pointer-events: none; }
+    .toolbar-backdrop.open { opacity: 1; pointer-events: auto; }
     @media (min-width: 640px) {
       .ai-toolbar { position: static; transform: none; max-height: none; background: none; }
     }
@@ -357,6 +360,7 @@
       <select id="voiceSelect"></select>
     </div>
   </section>
+  <div id="toolbarBackdrop" class="toolbar-backdrop"></div>
   <main class="container">
     <section class="card-list" id="cardList"></section>
     <div id="loader" class="loader hidden" aria-hidden="true"></div>
@@ -949,10 +953,35 @@
       observer.observe(sentinelEl);
     })();
 
-    // Toggle mobile toolbar bottom sheet
+    // Toggle mobile toolbar bottom sheet with backdrop
     const menuBtnEl = document.getElementById('menuBtn');
+    const backdropEl = document.getElementById('toolbarBackdrop');
     if (menuBtnEl) {
-      menuBtnEl.addEventListener('click', () => document.querySelector('.ai-toolbar').classList.toggle('open'));
+      menuBtnEl.addEventListener('click', () => {
+        const sheet = document.querySelector('.ai-toolbar');
+        sheet.classList.toggle('open');
+        backdropEl.classList.toggle('open');
+      });
+    }
+    // Close on backdrop tap
+    if (backdropEl) {
+      backdropEl.addEventListener('click', () => {
+        document.querySelector('.ai-toolbar').classList.remove('open');
+        backdropEl.classList.remove('open');
+      });
+    }
+    // Swipe-down to close sheet
+    const sheetEl = document.querySelector('.ai-toolbar');
+    let touchStartY = 0;
+    if (sheetEl) {
+      sheetEl.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; });
+      sheetEl.addEventListener('touchmove', e => {
+        const dy = e.touches[0].clientY - touchStartY;
+        if (dy > 50) {
+          sheetEl.classList.remove('open');
+          backdropEl.classList.remove('open');
+        }
+      });
     }
   </script>
   <!-- Settings dialog -->
