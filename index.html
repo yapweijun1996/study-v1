@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vocabulary Card Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f7f7f9;
+      color: #222;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: #3852e2;
+      color: #fff;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+    }
+    .lang-select {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .container {
+      max-width: 480px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 4px 16px #0001;
+      padding: 1.2rem 1.2rem 1rem 1.2rem;
+      transition: box-shadow 0.2s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      position: relative;
+    }
+    .card:hover {
+      box-shadow: 0 8px 24px #3852e244;
+    }
+    .word-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    .pronounce-btn {
+      background: #e4eafd;
+      border: none;
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      display: flex;
+      align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      margin-left: 0.3rem;
+    }
+    .expand-btn {
+      background: #3852e2;
+      color: #fff;
+      border: none;
+      border-radius: 1.5rem;
+      padding: 0.2rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      align-self: flex-start;
+      margin-top: 0.4rem;
+    }
+    /* Modal */
+    .modal-bg {
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(56, 82, 226, 0.17);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 40px #3852e266;
+      max-width: 340px;
+      width: 94vw;
+      padding: 2rem 1.4rem 1.2rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: modalIn 0.25s cubic-bezier(.36,.76,.6,1.21);
+    }
+    @keyframes modalIn {
+      from { transform: translateY(32px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .modal .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      color: #3852e2;
+      align-self: flex-end;
+      cursor: pointer;
+      margin-top: -0.6rem;
+      margin-bottom: -0.6rem;
+    }
+    .modal label {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      display: inline-block;
+    }
+    .modal input, .modal textarea {
+      width: 100%;
+      font-size: 1.04rem;
+      border-radius: 0.7rem;
+      border: 1px solid #b5bfff;
+      padding: 0.6rem 0.9rem;
+      margin-top: 0.2rem;
+      background: #f6f8ff;
+      resize: none;
+    }
+    .modal .ai-reply {
+      margin-top: 0.5rem;
+      padding: 0.8rem 1rem;
+      border-radius: 1rem;
+      background: #f0f4fe;
+      font-size: 1.02rem;
+    }
+    .modal .send-btn {
+      background: #3852e2;
+      color: #fff;
+      border: none;
+      border-radius: 1.2rem;
+      padding: 0.5rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      align-self: flex-end;
+    }
+    @media (max-width: 600px) {
+      .container { margin: 1rem 0; }
+      .header { flex-direction: column; gap: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span>AI Vocabulary Cards</span>
+    <div class="lang-select">
+      <label for="lang1">From:</label>
+      <select id="lang1">
+        <option value="en">English</option>
+        <option value="zh">中文</option>
+      </select>
+      <span>→</span>
+      <label for="lang2">To:</label>
+      <select id="lang2">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
+  <div class="container">
+    <div class="card-list" id="cardList"></div>
+  </div>
+
+  <!-- Modal (hidden by default) -->
+  <div class="modal-bg" id="modalBg" style="display:none;">
+    <div class="modal" id="modalContent">
+      <!-- Dynamic modal content inserted by JS -->
+    </div>
+  </div>
+
+  <script>
+    // Demo vocabulary list, easily expandable!
+    const vocabData = [
+      {
+        en: 'Apple',
+        zh: '苹果',
+        en_pron: 'ˈæp.əl',
+        zh_pron: 'píng guǒ',
+        en_def: 'A round fruit with red, green, or yellow skin and firm white flesh.',
+        zh_def: '一种圆形的水果，有红色、绿色或黄色的表皮，果肉坚实。',
+        en_example: 'She ate an apple for breakfast.',
+        zh_example: '她早餐吃了一个苹果。'
+      },
+      {
+        en: 'Computer',
+        zh: '电脑',
+        en_pron: 'kəmˈpjuː.tər',
+        zh_pron: 'diàn nǎo',
+        en_def: 'An electronic device for storing and processing data.',
+        zh_def: '一种用于存储和处理数据的电子设备。',
+        en_example: 'My computer is very fast.',
+        zh_example: '我的电脑很快。'
+      },
+      {
+        en: 'Train',
+        zh: '火车',
+        en_pron: 'treɪn',
+        zh_pron: 'huǒ chē',
+        en_def: 'A series of connected vehicles that travel along a railway.',
+        zh_def: '一种沿铁轨行驶的连接车辆。',
+        en_example: 'We took a train to Beijing.',
+        zh_example: '我们坐火车去了北京。'
+      },
+      {
+        en: 'Teacher',
+        zh: '老师',
+        en_pron: 'ˈtiː.tʃər',
+        zh_pron: 'lǎo shī',
+        en_def: 'A person who helps students learn in school.',
+        zh_def: '在学校帮助学生学习的人。',
+        en_example: 'My English teacher is very friendly.',
+        zh_example: '我的英语老师非常友好。'
+      }
+      // ... Add more as needed
+    ];
+
+    // State
+    let fromLang = 'en', toLang = 'zh';
+
+    // Elements
+    const cardList = document.getElementById('cardList');
+    const lang1 = document.getElementById('lang1');
+    const lang2 = document.getElementById('lang2');
+    const modalBg = document.getElementById('modalBg');
+    const modalContent = document.getElementById('modalContent');
+
+    // Functions
+    function renderCards() {
+      cardList.innerHTML = '';
+      // Only show cards if two different languages selected
+      if (fromLang === toLang) {
+        cardList.innerHTML = '<div style="padding:2rem;text-align:center;color:#888;">Please select different languages.</div>';
+        return;
+      }
+      vocabData.forEach((word, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.tabIndex = 0;
+        // Pronunciation
+        const pronWord = fromLang === 'en' ? word.en : word.zh;
+        const pronLang = fromLang === 'en' ? 'en-US' : 'zh-CN';
+        // Card content
+        card.innerHTML = `
+          <div class="word-row">
+            <span>${word[fromLang]}</span>
+            <button class="pronounce-btn" data-word="${pronWord}" data-lang="${pronLang}" title="Pronounce">
+              🔊
+            </button>
+          </div>
+          <div style="font-size:1rem;color:#3852e2;">
+            ${word[toLang]}
+          </div>
+          <div style="font-size:0.98rem;color:#444;">
+            <b>Example:</b> ${word[fromLang + '_example']}
+          </div>
+          <button class="expand-btn" data-idx="${idx}">Learn More</button>
+        `;
+        // Pronunciation button
+        card.querySelector('.pronounce-btn').onclick = (e) => {
+          e.stopPropagation();
+          speakWord(pronWord, pronLang);
+        };
+        // Expand (modal)
+        card.querySelector('.expand-btn').onclick = (e) => {
+          e.stopPropagation();
+          openModal(word, idx);
+        };
+        card.onclick = () => openModal(word, idx);
+        cardList.appendChild(card);
+      });
+    }
+
+    function speakWord(word, lang) {
+      if (!window.speechSynthesis) return;
+      const utter = new SpeechSynthesisUtterance(word);
+      utter.lang = lang;
+      speechSynthesis.speak(utter);
+    }
+
+    function openModal(word, idx) {
+      // Pronunciation buttons in modal
+      let pronBtnEN = `<button class="pronounce-btn" data-word="${word.en}" data-lang="en-US" title="Pronounce">🔊</button>`;
+      let pronBtnZH = `<button class="pronounce-btn" data-word="${word.zh}" data-lang="zh-CN" title="Pronounce">🔊</button>`;
+      modalContent.innerHTML = `
+        <button class="close-btn" title="Close">&times;</button>
+        <div style="font-size:1.28rem;font-weight:600;margin-bottom:0.1rem;">
+          ${word.en} ${pronBtnEN} / ${word.zh} ${pronBtnZH}
+        </div>
+        <div style="font-size:1rem;color:#888;margin-bottom:0.4rem;">
+          [${word.en_pron}] / [${word.zh_pron}]
+        </div>
+        <div style="margin-bottom:0.6rem;">
+          <b>Definition:</b><br>
+          <span>${word[fromLang + '_def']}</span>
+          <br><span style="color:#3852e2;">${word[toLang + '_def']}</span>
+        </div>
+        <div>
+          <b>Example:</b>
+          <br>${word[fromLang + '_example']}
+          <br><span style="color:#3852e2;">${word[toLang + '_example']}</span>
+        </div>
+        <hr style="margin:1.1rem 0 0.7rem 0;">
+        <label for="askAiInput">Ask AI about this word</label>
+        <input id="askAiInput" placeholder="Type your question..." autocomplete="off" />
+        <button class="send-btn" id="sendBtn">Send</button>
+        <div class="ai-reply" id="aiReply" style="display:none;"></div>
+      `;
+      // Close button
+      modalContent.querySelector('.close-btn').onclick = closeModal;
+      // Pronunciation buttons in modal
+      modalContent.querySelectorAll('.pronounce-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          speakWord(btn.dataset.word, btn.dataset.lang);
+        };
+      });
+      // Ask AI
+      modalContent.querySelector('#sendBtn').onclick = () => {
+        const input = modalContent.querySelector('#askAiInput');
+        askAiAboutWord(word, input.value);
+      };
+      modalBg.style.display = '';
+      setTimeout(() => modalContent.querySelector('#askAiInput').focus(), 250);
+    }
+
+    function closeModal() {
+      modalBg.style.display = 'none';
+    }
+
+    function askAiAboutWord(word, question) {
+      const replyDiv = modalContent.querySelector('#aiReply');
+      if (!question.trim()) {
+        replyDiv.style.display = '';
+        replyDiv.textContent = "Please enter a question!";
+        return;
+      }
+      replyDiv.style.display = '';
+      replyDiv.textContent = "Thinking...";
+      // Simulate AI response for demo (replace with real API call if needed)
+      setTimeout(() => {
+        replyDiv.textContent = mockAiReply(word, question);
+      }, 600);
+    }
+
+    // Simple AI reply simulation for demo (replace with OpenAI, Gemini etc. for real use)
+    function mockAiReply(word, question) {
+      // Example: respond differently depending on question
+      if (question.toLowerCase().includes("business")) {
+        return `In business context, "${word.en}" can mean "${word.en_def}". For example: "We closed the deal over an apple-themed lunch."`;
+      }
+      if (question.toLowerCase().includes("mistake") || question.toLowerCase().includes("error")) {
+        return `Common mistake: Don't confuse "${word.en}" with "${word.zh}" in written English.`;
+      }
+      return `Here is a helpful tip: "${word.en}" (${word.zh}) - ${word.en_def} / ${word.zh_def}\n\nExample: ${word.en_example} / ${word.zh_example}`;
+    }
+
+    // Language pickers
+    lang1.onchange = () => {
+      fromLang = lang1.value;
+      toLang = lang2.value;
+      // Prevent same selection
+      if (fromLang === toLang) {
+        toLang = fromLang === 'en' ? 'zh' : 'en';
+        lang2.value = toLang;
+      }
+      renderCards();
+    };
+    lang2.onchange = () => {
+      toLang = lang2.value;
+      fromLang = lang1.value;
+      // Prevent same selection
+      if (fromLang === toLang) {
+        fromLang = toLang === 'en' ? 'zh' : 'en';
+        lang1.value = fromLang;
+      }
+      renderCards();
+    };
+    // Modal close on background click
+    modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
+
+    // Initialize
+    renderCards();
+  </script>
+</body>
+</html>
