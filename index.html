@@ -915,11 +915,15 @@
       function speakWord(text, explicitLang = null) {
         // Strip parenthesized content (e.g. pinyin) before speaking
         const clean = text.replace(/[（(][^）)]+[）)]/g, '').trim();
-        if (!window.speechSynthesis) return;
+        if (!window.speechSynthesis) {
+          alert('Text-to-speech is not supported in this browser.');
+          return;
+        }
         // Auto-detect language: only allow English and Chinese (Mandarin)
         let langCode = explicitLang || detectLang(clean);
+        console.log('TTS detected language:', langCode, 'Text:', clean);
         if (langCode !== 'en' && langCode !== 'zh') {
-          // Optionally, show a message: alert('Only English and Mandarin Chinese TTS is supported.');
+          alert('Only English and Mandarin Chinese TTS is supported.');
           return;
         }
         langCode = langCode === 'en' ? 'en-US' : 'zh-CN';
@@ -934,6 +938,7 @@
         } else {
           utter.voice = pickVoice(langCode);
         }
+        console.log('TTS speaking with lang:', utter.lang, 'voice:', utter.voice);
         speechSynthesis.speak(utter);
       }
 
