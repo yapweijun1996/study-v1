@@ -386,64 +386,64 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Demo vocabulary list, easily expandable!
+    // Demo vocabulary list, easily expandable!
       let vocabData = [
-        {
-          en: 'Apple',
-          zh: '苹果',
-          en_pron: 'ˈæp.əl',
-          zh_pron: 'píng guǒ',
-          en_def: 'A round fruit with red, green, or yellow skin and firm white flesh.',
-          zh_def: '一种圆形的水果，有红色、绿色或黄色的表皮，果肉坚实。',
-          en_example: 'She ate an apple for breakfast.',
-          zh_example: '她早餐吃了一个苹果。'
-        },
-        {
-          en: 'Computer',
-          zh: '电脑',
-          en_pron: 'kəmˈpjuː.tər',
-          zh_pron: 'diàn nǎo',
-          en_def: 'An electronic device for storing and processing data.',
-          zh_def: '一种用于存储和处理数据的电子设备。',
-          en_example: 'My computer is very fast.',
-          zh_example: '我的电脑很快。'
-        },
-        {
-          en: 'Train',
-          zh: '火车',
-          en_pron: 'treɪn',
-          zh_pron: 'huǒ chē',
-          en_def: 'A series of connected vehicles that travel along a railway.',
-          zh_def: '一种沿铁轨行驶的连接车辆。',
-          en_example: 'We took a train to Beijing.',
-          zh_example: '我们坐火车去了北京。'
-        },
-        {
-          en: 'Teacher',
-          zh: '老师',
-          en_pron: 'ˈtiː.tʃər',
-          zh_pron: 'lǎo shī',
-          en_def: 'A person who helps students learn in school.',
-          zh_def: '在学校帮助学生学习的人。',
-          en_example: 'My English teacher is very friendly.',
-          zh_example: '我的英语老师非常友好。'
-        }
-        // ... Add more as needed
-      ];
+      {
+        en: 'Apple',
+        zh: '苹果',
+        en_pron: 'ˈæp.əl',
+        zh_pron: 'píng guǒ',
+        en_def: 'A round fruit with red, green, or yellow skin and firm white flesh.',
+        zh_def: '一种圆形的水果，有红色、绿色或黄色的表皮，果肉坚实。',
+        en_example: 'She ate an apple for breakfast.',
+        zh_example: '她早餐吃了一个苹果。'
+      },
+      {
+        en: 'Computer',
+        zh: '电脑',
+        en_pron: 'kəmˈpjuː.tər',
+        zh_pron: 'diàn nǎo',
+        en_def: 'An electronic device for storing and processing data.',
+        zh_def: '一种用于存储和处理数据的电子设备。',
+        en_example: 'My computer is very fast.',
+        zh_example: '我的电脑很快。'
+      },
+      {
+        en: 'Train',
+        zh: '火车',
+        en_pron: 'treɪn',
+        zh_pron: 'huǒ chē',
+        en_def: 'A series of connected vehicles that travel along a railway.',
+        zh_def: '一种沿铁轨行驶的连接车辆。',
+        en_example: 'We took a train to Beijing.',
+        zh_example: '我们坐火车去了北京。'
+      },
+      {
+        en: 'Teacher',
+        zh: '老师',
+        en_pron: 'ˈtiː.tʃər',
+        zh_pron: 'lǎo shī',
+        en_def: 'A person who helps students learn in school.',
+        zh_def: '在学校帮助学生学习的人。',
+        en_example: 'My English teacher is very friendly.',
+        zh_example: '我的英语老师非常友好。'
+      }
+      // ... Add more as needed
+    ];
 
-      // State
+    // State
       let fromLang = localStorage.getItem('fromLang') || 'en';
       let toLang = localStorage.getItem('toLang') || 'zh';
       let selectedModel = localStorage.getItem('geminiModel') || 'gemini-2.0-flash';
       let selectedLevel = localStorage.getItem('selectedLevel') || 'easy';
       let chatHistory = {};
 
-      // Elements
-      const cardList = document.getElementById('cardList');
-      const lang1 = document.getElementById('lang1');
-      const lang2 = document.getElementById('lang2');
-      const modalBg = document.getElementById('modalBg');
-      const modalContent = document.getElementById('modalContent');
+    // Elements
+    const cardList = document.getElementById('cardList');
+    const lang1 = document.getElementById('lang1');
+    const lang2 = document.getElementById('lang2');
+    const modalBg = document.getElementById('modalBg');
+    const modalContent = document.getElementById('modalContent');
       const modelSelect = document.getElementById('modelSelect');
 
       // Initialize model and API key input
@@ -507,53 +507,53 @@
       const CARDS_BATCH_SIZE = 10;
       function renderCards(reset = false) {
         if (reset) cardsToShow = CARDS_BATCH_SIZE;
-        cardList.innerHTML = '';
-        // Only show cards if two different languages selected
-        if (fromLang === toLang) {
-          cardList.innerHTML = '<div style="padding:2rem;text-align:center;color:#888;">Please select different languages.</div>';
-          return;
-        }
+      cardList.innerHTML = '';
+      // Only show cards if two different languages selected
+      if (fromLang === toLang) {
+        cardList.innerHTML = '<div style="padding:2rem;text-align:center;color:#888;">Please select different languages.</div>';
+        return;
+      }
         const toRender = vocabData.slice(0, cardsToShow);
         toRender.forEach((word, idx) => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.tabIndex = 0;
-          // Pronunciation
-          const pronWord = fromLang === 'en' ? word.en : word.zh;
-          const pronLang = fromLang === 'en' ? 'en-US' : 'zh-CN';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.tabIndex = 0;
+        // Pronunciation
+        const pronWord = fromLang === 'en' ? word.en : word.zh;
+        const pronLang = fromLang === 'en' ? 'en-US' : 'zh-CN';
           const levelColor = selectedLevel==='easy'?'🟢':(selectedLevel==='medium'?'🟠':'🔴');
-          card.innerHTML = `
-            <div class="word-row">
-              <span>${word[fromLang]}</span>
-              <button class="pronounce-btn" data-word="${pronWord}" data-lang="${pronLang}" title="Pronounce">
-                🔊
-              </button>
-            </div>
-            <div style="font-size:1rem;color:#3852e2;">
-              ${word[toLang]}
-            </div>
+        card.innerHTML = `
+          <div class="word-row">
+            <span>${word[fromLang]}</span>
+            <button class="pronounce-btn" data-word="${pronWord}" data-lang="${pronLang}" title="Pronounce">
+              🔊
+            </button>
+          </div>
+          <div style="font-size:1rem;color:#3852e2;">
+            ${word[toLang]}
+          </div>
             <div style="font-size:0.98rem;color:#444;display:flex;align-items:center;gap:0.5rem;">
-              <b>Example:</b> ${word[fromLang + '_example']}
+            <b>Example:</b> ${word[fromLang + '_example']}
               <button class="tts-btn" data-sentence="${word[fromLang + '_example'].replace(/"/g, '&quot;')}" data-lang="${fromLang === 'en' ? 'en-US' : 'zh-CN'}" title="Read example" style="background:#e4eafd;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;">🔊</button>
               <button class="save-btn" title="Save word" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">★</button>
-            </div>
+          </div>
             <span class="card-chevron">&#8594;</span>
             <span class="difficulty-chip">${levelColor}</span>
-          `;
-          // Pronunciation button
-          card.querySelector('.pronounce-btn').onclick = (e) => {
-            e.stopPropagation();
-            speakWord(pronWord, pronLang);
-          };
+        `;
+        // Pronunciation button
+        card.querySelector('.pronounce-btn').onclick = (e) => {
+          e.stopPropagation();
+          speakWord(pronWord, pronLang);
+        };
           // TTS for example sentence
           card.querySelector('.tts-btn').onclick = (e) => {
-            e.stopPropagation();
+          e.stopPropagation();
             speakWord(e.currentTarget.dataset.sentence, e.currentTarget.dataset.lang);
-          };
+        };
           card.querySelector('.save-btn').onclick = (e)=>{e.stopPropagation(); alert('Saved!');};
-          card.onclick = () => openModal(word, idx);
+        card.onclick = () => openModal(word, idx);
           card.tabIndex = 0;
-          cardList.appendChild(card);
+        cardList.appendChild(card);
         });
         // If more cards to load, add a sentinel div for scroll detection
         if (cardsToShow < vocabData.length) {
@@ -620,7 +620,7 @@
       function speakWord(text, explicitLang = null) {
         // Strip parenthesized content (e.g. pinyin) before speaking
         const clean = text.replace(/[（(][^）)]+[）)]/g, '').trim();
-        if (!window.speechSynthesis) return;
+      if (!window.speechSynthesis) return;
         const langCode = explicitLang || detectLang(clean);
         const utter = new SpeechSynthesisUtterance(clean);
         utter.lang = langCode;
@@ -633,8 +633,8 @@
         } else {
           utter.voice = pickVoice(langCode);
         }
-        speechSynthesis.speak(utter);
-      }
+      speechSynthesis.speak(utter);
+    }
 
       // Populate voiceSelect dropdown
       function populateVoiceList() {
@@ -709,7 +709,7 @@
         }
       }
 
-      function openModal(word, idx) {
+    function openModal(word, idx) {
         // Prepare separated examples and pinyin
         const fromExample = word[fromLang + '_example'];
         const toExample = word[toLang + '_example'];
@@ -727,9 +727,9 @@
             ${toText}${ttsTo}
             ${pinyinHtml}
           </div>`;
-        // Pronunciation buttons in modal
-        let pronBtnEN = `<button class="pronounce-btn" data-word="${word.en}" data-lang="en-US" title="Pronounce">🔊</button>`;
-        let pronBtnZH = `<button class="pronounce-btn" data-word="${word.zh}" data-lang="zh-CN" title="Pronounce">🔊</button>`;
+      // Pronunciation buttons in modal
+      let pronBtnEN = `<button class="pronounce-btn" data-word="${word.en}" data-lang="en-US" title="Pronounce">🔊</button>`;
+      let pronBtnZH = `<button class="pronounce-btn" data-word="${word.zh}" data-lang="zh-CN" title="Pronounce">🔊</button>`;
         // Unique key for chat history
         const wordKey = word.en + '|' + word.zh;
         // Render chat history for this word
@@ -745,37 +745,37 @@
             }
           }).join('') + '</div>';
         }
-        modalContent.innerHTML = `
-          <button class="close-btn" title="Close">&times;</button>
+      modalContent.innerHTML = `
+        <button class="close-btn" title="Close">&times;</button>
           <div style="font-size:1.28rem;font-weight:600;margin-bottom:var(--space-xs);">
-            ${word.en} ${pronBtnEN} / ${word.zh} ${pronBtnZH}
-          </div>
+          ${word.en} ${pronBtnEN} / ${word.zh} ${pronBtnZH}
+        </div>
           <div style="font-size:1rem;color:#888;margin-bottom:var(--space-sm);">
-            [${word.en_pron}] / [${word.zh_pron}]
-          </div>
+          [${word.en_pron}] / [${word.zh_pron}]
+        </div>
           <div style="margin-bottom:var(--space-sm);">
-            <b>Definition:</b><br>
-            <span>${word[fromLang + '_def']}</span>
-            <br><span style="color:#3852e2;">${word[toLang + '_def']}</span>
-          </div>
+          <b>Definition:</b><br>
+          <span>${word[fromLang + '_def']}</span>
+          <br><span style="color:#3852e2;">${word[toLang + '_def']}</span>
+        </div>
           ${examplesHtml}
           <button class="load-examples-btn" style="margin-top:var(--space-sm);">Load More Examples</button>
           <hr style="margin:var(--space-sm) 0 var(--space-xs) 0;">
           ${chatHtml}
-          <label for="askAiInput">Ask AI about this word</label>
-          <input id="askAiInput" placeholder="Type your question..." autocomplete="off" />
-          <button class="send-btn" id="sendBtn">Send</button>
-          <div class="ai-reply" id="aiReply" style="display:none;"></div>
-        `;
-        // Close button
-        modalContent.querySelector('.close-btn').onclick = closeModal;
-        // Pronunciation buttons in modal
-        modalContent.querySelectorAll('.pronounce-btn').forEach(btn => {
-          btn.onclick = (e) => {
-            e.stopPropagation();
-            speakWord(btn.dataset.word, btn.dataset.lang);
-          };
-        });
+        <label for="askAiInput">Ask AI about this word</label>
+        <input id="askAiInput" placeholder="Type your question..." autocomplete="off" />
+        <button class="send-btn" id="sendBtn">Send</button>
+        <div class="ai-reply" id="aiReply" style="display:none;"></div>
+      `;
+      // Close button
+      modalContent.querySelector('.close-btn').onclick = closeModal;
+      // Pronunciation buttons in modal
+      modalContent.querySelectorAll('.pronounce-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          speakWord(btn.dataset.word, btn.dataset.lang);
+        };
+      });
         // TTS for existing examples
         modalContent.querySelectorAll('#examplesSection .tts-btn').forEach(btn => {
           btn.onclick = (e) => {
@@ -785,8 +785,8 @@
         });
         // Load more examples button
         modalContent.querySelector('.load-examples-btn').onclick = () => loadMoreExamples(word);
-        // Ask AI
-          const input = modalContent.querySelector('#askAiInput');
+      // Ask AI
+        const input = modalContent.querySelector('#askAiInput');
         const sendBtn = modalContent.querySelector('#sendBtn');
         sendBtn.addEventListener('click', () => {
           const question = input.value.trim();
@@ -801,9 +801,9 @@
             sendBtn.click();
           }
         });
-        modalBg.style.display = '';
-        setTimeout(() => modalContent.querySelector('#askAiInput').focus(), 250);
-      }
+      modalBg.style.display = '';
+      setTimeout(() => modalContent.querySelector('#askAiInput').focus(), 250);
+    }
 
       // Helper to re-render chat history in modal after new message
       function updateChatHistoryInModal(word) {
@@ -825,19 +825,19 @@
         }
       }
 
-      function closeModal() {
-        modalBg.style.display = 'none';
-      }
+    function closeModal() {
+      modalBg.style.display = 'none';
+    }
 
-      function askAiAboutWord(word, question) {
-        const replyDiv = modalContent.querySelector('#aiReply');
-        if (!question.trim()) {
-          replyDiv.style.display = '';
-          replyDiv.textContent = "Please enter a question!";
-          return;
-        }
+    function askAiAboutWord(word, question) {
+      const replyDiv = modalContent.querySelector('#aiReply');
+      if (!question.trim()) {
+        replyDiv.style.display = '';
+        replyDiv.textContent = "Please enter a question!";
+        return;
+      }
         if (!apiKey) {
-          replyDiv.style.display = '';
+      replyDiv.style.display = '';
           replyDiv.textContent = "Please enter your Gemini API key above.";
           return;
         }
@@ -863,35 +863,35 @@
         }).catch(err => {
           replyDiv.textContent = "Error: " + (err.message || err);
         });
-      }
+    }
 
-      // Language pickers
-      lang1.onchange = () => {
-        fromLang = lang1.value;
-        toLang = lang2.value;
-        // Prevent same selection
-        if (fromLang === toLang) {
-          toLang = fromLang === 'en' ? 'zh' : 'en';
-          lang2.value = toLang;
-        }
+    // Language pickers
+    lang1.onchange = () => {
+      fromLang = lang1.value;
+      toLang = lang2.value;
+      // Prevent same selection
+      if (fromLang === toLang) {
+        toLang = fromLang === 'en' ? 'zh' : 'en';
+        lang2.value = toLang;
+      }
         localStorage.setItem('fromLang', fromLang);
         localStorage.setItem('toLang', toLang);
         renderCards(true);
-      };
-      lang2.onchange = () => {
-        toLang = lang2.value;
-        fromLang = lang1.value;
-        // Prevent same selection
-        if (fromLang === toLang) {
-          fromLang = toLang === 'en' ? 'zh' : 'en';
-          lang1.value = fromLang;
-        }
+    };
+    lang2.onchange = () => {
+      toLang = lang2.value;
+      fromLang = lang1.value;
+      // Prevent same selection
+      if (fromLang === toLang) {
+        fromLang = toLang === 'en' ? 'zh' : 'en';
+        lang1.value = fromLang;
+      }
         localStorage.setItem('fromLang', fromLang);
         localStorage.setItem('toLang', toLang);
         renderCards(true);
-      };
-      // Modal close on background click
-      modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
+    };
+    // Modal close on background click
+    modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
 
       // --- Auto-generate vocabData using Gemini AI on load ---
       async function generateVocabDataWithAI() {
@@ -1046,6 +1046,11 @@
     </div>
   </dialog>
   <script type="module">
+    // State variables for settings module
+    let selectedLevel = localStorage.getItem('selectedLevel') || 'easy';
+    let fromLang = localStorage.getItem('fromLang') || 'en';
+    let toLang = localStorage.getItem('toLang') || 'zh';
+    let selectedModel = localStorage.getItem('geminiModel') || 'gemini-2.0-flash';
     /* IndexedDB helper */
     const dbPromise = (async () => {
       return new Promise((res, rej) => {
@@ -1077,56 +1082,42 @@
     settingsBtn.addEventListener('click', () => dlg.showModal());
     document.getElementById('cancelBtn').onclick = () => dlg.close();
     document.getElementById('saveBtn').addEventListener('click', async () => {
-      // Gather prefs only if elements exist
-      const prefs = {};
-      const lvlEl = document.getElementById('levelSelect'); if (lvlEl) prefs.level = lvlEl.value;
-      const themeEl = document.getElementById('themeSelect'); if (themeEl) prefs.theme = themeEl.value;
-      const fromEl = document.getElementById('lang1'); if (fromEl) prefs.from = fromEl.value;
-      const toEl = document.getElementById('lang2'); if (toEl) prefs.to = toEl.value;
-      const modelEl = document.getElementById('modelSelect'); if (modelEl) prefs.model = modelEl.value;
-      const voiceEl = document.getElementById('voiceSelect'); if (voiceEl) prefs.voice = voiceEl.value;
+      const prefs = {
+        level: document.getElementById('levelSelect').value,
+        theme: document.getElementById('themeSelect').value,
+        from: document.getElementById('lang1').value,
+        to: document.getElementById('lang2').value,
+        model: document.getElementById('modelSelect').value,
+        voice: document.getElementById('voiceSelect').value
+      };
       await idbSet('prefs', prefs);
       applyPrefs(prefs);
       dlg.close();
     });
 
     (async () => {
-      const defaultVoice = localStorage.getItem('selectedVoice') || 'Daniel';
-      const prefs = await idbGet('prefs') || { level: 'easy', theme: 'system', from: 'en', to: 'zh', model: 'gemini-2.0-flash', voice: defaultVoice };
-      const lvlInit = document.getElementById('levelSelect'); if (lvlInit && prefs.level) lvlInit.value = prefs.level;
-      const fromInit = document.getElementById('lang1'); if (fromInit && prefs.from) fromInit.value = prefs.from;
-      const toInit = document.getElementById('lang2'); if (toInit && prefs.to) toInit.value = prefs.to;
-      const modelInit = document.getElementById('modelSelect'); if (modelInit && prefs.model) modelInit.value = prefs.model;
-      const voiceInit = document.getElementById('voiceSelect'); if (voiceInit && prefs.voice) voiceInit.value = prefs.voice;
-      const themeInit = document.getElementById('themeSelect'); if (themeInit && prefs.theme) themeInit.value = prefs.theme;
+      const prefs = await idbGet('prefs') || { level: 'easy', theme: 'system', from: 'en', to: 'zh', model: 'gemini-2.0-flash', voice: localStorage.getItem('selectedVoice') || 'Daniel' };
+      document.getElementById('levelSelect').value = prefs.level;
+      document.getElementById('lang1').value = prefs.from;
+      document.getElementById('lang2').value = prefs.to;
+      document.getElementById('modelSelect').value = prefs.model;
+      document.getElementById('voiceSelect').value = prefs.voice;
+      document.getElementById('themeSelect').value = prefs.theme;
       applyPrefs(prefs);
     })();
 
     function applyPrefs({ level, theme, from, to, model, voice }) {
-      if (level) {
-        selectedLevel = level;
-        localStorage.setItem('selectedLevel', level);
-      }
+      selectedLevel = level;
+      localStorage.setItem('selectedLevel', level);
       // Apply language/model/voice
-      if (from) {
-        fromLang = from;
-        localStorage.setItem('fromLang', fromLang);
-      }
-      if (to) {
-        toLang = to;
-        localStorage.setItem('toLang', toLang);
-      }
-      if (model) {
-        const modelEl = document.getElementById('modelSelect');
-        if (modelEl) modelEl.value = model;
-        selectedModel = model;
-        localStorage.setItem('geminiModel', model);
-      }
-      if (voice) {
-        const voiceEl = document.getElementById('voiceSelect');
-        if (voiceEl) voiceEl.value = voice;
-        localStorage.setItem('selectedVoice', voice);
-      }
+      fromLang = from; toLang = to;
+      localStorage.setItem('fromLang', fromLang);
+      localStorage.setItem('toLang', toLang);
+      modelSelect.value = model;
+      selectedModel = model;
+      localStorage.setItem('geminiModel', model);
+      voiceSelect.value = voice;
+      localStorage.setItem('selectedVoice', voice);
       // Theme override
       if (theme === 'system') {
         document.documentElement.removeAttribute('data-theme');
