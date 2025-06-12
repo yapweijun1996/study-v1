@@ -362,22 +362,26 @@
       };
     }
 
-    // Functions
-    function renderCards() {
+    // Lazy load state
+    let cardsToShow = 10;
+    const CARDS_BATCH_SIZE = 10;
+    function renderCards(reset = false) {
+      if (reset) cardsToShow = CARDS_BATCH_SIZE;
       cardList.innerHTML = '';
       // Only show cards if two different languages selected
       if (fromLang === toLang) {
         cardList.innerHTML = '<div style="padding:2rem;text-align:center;color:#888;">Please select different languages.</div>';
         return;
       }
-      vocabData.forEach((word, idx) => {
+      const toRender = vocabData.slice(0, cardsToShow);
+      toRender.forEach((word, idx) => {
         const card = document.createElement('div');
         card.className = 'card';
         card.tabIndex = 0;
         // Pronunciation
         const pronWord = fromLang === 'en' ? word.en : word.zh;
         const pronLang = fromLang === 'en' ? 'en-US' : 'zh-CN';
-        // Card content
+        // Card content with TTS for example sentence
         card.innerHTML = `
           <div class="word-row">
             <span>${word[fromLang]}</span>
@@ -388,8 +392,9 @@
           <div style="font-size:1rem;color:#3852e2;">
             ${word[toLang]}
           </div>
-          <div style="font-size:0.98rem;color:#444;">
+          <div style="font-size:0.98rem;color:#444;display:flex;align-items:center;gap:0.5rem;">
             <b>Example:</b> ${word[fromLang + '_example']}
+            <button class="tts-btn" data-sentence="${word[fromLang + '_example'].replace(/"/g, '&quot;')}" data-lang="${fromLang === 'en' ? 'en-US' : 'zh-CN'}" title="Read example" style="background:#e4eafd;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;">🔊</button>
           </div>
           <span class="card-chevron">&#8594;</span>
         `;
@@ -398,10 +403,39 @@
           e.stopPropagation();
           speakWord(pronWord, pronLang);
         };
+        // TTS for example sentence
+        card.querySelector('.tts-btn').onclick = (e) => {
+          e.stopPropagation();
+          speakWord(e.currentTarget.dataset.sentence, e.currentTarget.dataset.lang);
+        };
         card.onclick = () => openModal(word, idx);
+        card.tabIndex = 0;
         cardList.appendChild(card);
       });
+      // If more cards to load, add a sentinel div for scroll detection
+      if (cardsToShow < vocabData.length) {
+        let sentinel = document.createElement('div');
+        sentinel.id = 'cardSentinel';
+        sentinel.style.height = '32px';
+        cardList.appendChild(sentinel);
+      }
     }
+
+    // Infinite scroll logic
+    function onCardListScroll() {
+      const sentinel = document.getElementById('cardSentinel');
+      if (!sentinel) return;
+      const rect = sentinel.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 100) {
+        // Load more cards
+        if (cardsToShow < vocabData.length) {
+          cardsToShow += CARDS_BATCH_SIZE;
+          renderCards();
+        }
+      }
+    }
+    cardList.addEventListener('scroll', onCardListScroll);
+    window.addEventListener('scroll', onCardListScroll); // for mobile/viewport scrolling
 
     function speakWord(word, lang) {
       if (!window.speechSynthesis) return;
@@ -547,7 +581,7 @@
       }
       localStorage.setItem('fromLang', fromLang);
       localStorage.setItem('toLang', toLang);
-      renderCards();
+      renderCards(true);
     };
     lang2.onchange = () => {
       toLang = lang2.value;
@@ -559,7 +593,7 @@
       }
       localStorage.setItem('fromLang', fromLang);
       localStorage.setItem('toLang', toLang);
-      renderCards();
+      renderCards(true);
     };
     // Modal close on background click
     modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
@@ -597,7 +631,7 @@
             vocabData = data;
             loaderDiv.style.display = 'none';
             cardList.style.display = '';
-            renderCards();
+            renderCards(true);
             return;
           }
         }
