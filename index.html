@@ -332,6 +332,17 @@
   </header>
   <section class="ai-toolbar" aria-label="AI Controls">
     <div style="background:#fff;border-radius:1rem;box-shadow:0 2px 12px #0001;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+      <label for="lang1">From:</label>
+      <select id="lang1">
+        <option value="en">English</option>
+        <option value="zh">中文</option>
+      </select>
+      <span>→</span>
+      <label for="lang2">To:</label>
+      <select id="lang2">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+      </select>
       <label for="modelSelect">Model:</label>
       <select id="modelSelect">
         <option value="gemini-2.0-flash">gemini-2.0-flash</option>
@@ -996,7 +1007,8 @@
     function applyPrefs({ level }) {
       selectedLevel = level;
       localStorage.setItem('selectedLevel', level);
-      renderCards(true);
+      // Defer rerender until main script has initialized CARDS_BATCH_SIZE
+      setTimeout(() => renderCards(true), 0);
     }
   </script>
   <script>
