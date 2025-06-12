@@ -225,7 +225,7 @@
 
   <script>
     // Demo vocabulary list, easily expandable!
-    const vocabData = [
+    let vocabData = [
       {
         en: 'Apple',
         zh: '苹果',
@@ -270,8 +270,9 @@
     ];
 
     // State
-    let fromLang = 'en', toLang = 'zh';
-    let selectedModel = sessionStorage.getItem('geminiModel') || 'gemini-2.0-flash';
+    let fromLang = localStorage.getItem('fromLang') || 'en';
+    let toLang = localStorage.getItem('toLang') || 'zh';
+    let selectedModel = localStorage.getItem('geminiModel') || 'gemini-2.0-flash';
     // Per-word chat history: { [wordKey]: [messages] }
     let chatHistory = {};
 
@@ -285,10 +286,12 @@
 
     // Initialize model and API key input
     modelSelect.value = selectedModel;
+    lang1.value = fromLang;
+    lang2.value = toLang;
 
     modelSelect.onchange = () => {
       selectedModel = modelSelect.value;
-      sessionStorage.setItem('geminiModel', selectedModel);
+      localStorage.setItem('geminiModel', selectedModel);
     };
 
     // Gemini API config
@@ -520,6 +523,8 @@
         toLang = fromLang === 'en' ? 'zh' : 'en';
         lang2.value = toLang;
       }
+      localStorage.setItem('fromLang', fromLang);
+      localStorage.setItem('toLang', toLang);
       renderCards();
     };
     lang2.onchange = () => {
@@ -530,6 +535,8 @@
         fromLang = toLang === 'en' ? 'zh' : 'en';
         lang1.value = fromLang;
       }
+      localStorage.setItem('fromLang', fromLang);
+      localStorage.setItem('toLang', toLang);
       renderCards();
     };
     // Modal close on background click
