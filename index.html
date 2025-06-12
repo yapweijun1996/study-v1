@@ -1064,7 +1064,7 @@
           } else {
             reply = "Sorry, no response from Gemini.";
           }
-          replyDiv.textContent = reply;
+          replyDiv.innerHTML = marked.parse(reply);
           // Update chat history display in modal
           updateChatHistoryInModal(word);
         }).catch(err => {
