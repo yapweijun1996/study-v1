@@ -1203,16 +1203,9 @@
 
       // --- Auto-generate vocabData using Gemini AI on load ---
       async function generateVocabDataWithAI(append = false) {
-        // Show full-screen loader overlay
-        let loaderBg = document.getElementById('loaderBg');
-        if (!loaderBg) {
-          loaderBg = document.createElement('div');
-          loaderBg.id = 'loaderBg';
-          loaderBg.className = 'loader-bg';
-          loaderBg.innerHTML = '<div class="spinner"></div>';
-          document.body.appendChild(loaderBg);
-        }
-        loaderBg.style.display = 'flex';
+        // Use only the #loader element for loading indication
+        const loaderEl = document.getElementById('loader');
+        loaderEl.classList.remove('hidden');
         // Compose prompt for Gemini
         const prompt = `Generate a list of 10 English words with their Chinese translations, IPA pronunciations, definitions, and example sentences in both languages. Format as a JSON array with keys: en, zh, en_pron, zh_pron, en_def, zh_def, en_example, zh_example.`;
         try {
@@ -1231,14 +1224,14 @@
             if (Array.isArray(data) && data.length > 0) {
               if (append) {
                 vocabData = vocabData.concat(data);
-                loaderBg.style.display = 'none';
+                loaderEl.classList.add('hidden');
                 // Only render the new batch
                 cardsToShow += data.length;
                 renderCards(false);
                 return;
               } else {
                 vocabData = data;
-                loaderBg.style.display = 'none';
+                loaderEl.classList.add('hidden');
                 renderCards(true);
                 return;
               }
@@ -1246,7 +1239,7 @@
           }
           throw new Error('Could not parse vocab list from AI response.');
         } catch (err) {
-          loaderBg.style.display = 'none';
+          loaderEl.classList.add('hidden');
           cardList.innerHTML = `<div style=\"padding:2rem;text-align:center;color:#c00;\">Failed to load vocabulary from AI.<br>${err.message || err}</div>`;
         }
       }
