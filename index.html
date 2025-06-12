@@ -921,6 +921,8 @@
         }
         // Auto-detect language: only allow English and Chinese (Mandarin)
         let langCode = explicitLang || detectLang(clean);
+        if (langCode.startsWith('en')) langCode = 'en';
+        else if (langCode.startsWith('zh')) langCode = 'zh';
         console.log('TTS detected language:', langCode, 'Text:', clean);
         if (langCode !== 'en' && langCode !== 'zh') {
           alert('Only English and Mandarin Chinese TTS is supported.');
