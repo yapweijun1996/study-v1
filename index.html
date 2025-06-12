@@ -578,6 +578,11 @@
     function pickVoice(langCode) {
       const prefix = langCode.split('-')[0];
       const list = voiceMap[prefix] || [];
+      // For English, prefer the 'Daniel' voice if available
+      if (prefix === 'en') {
+        const danielVoice = list.find(v => v.name === 'Daniel');
+        if (danielVoice) return danielVoice;
+      }
       return list.find(v => v.localService) || list[0] || speechSynthesis.getVoices()[0];
     }
 
@@ -613,7 +618,16 @@
         voiceSelect.appendChild(opt);
       });
       const saved = localStorage.getItem('selectedVoice');
-      if (saved) voiceSelect.value = saved;
+      if (saved) {
+        voiceSelect.value = saved;
+      } else {
+        // Default to 'Daniel' if available
+        const defaultOpt = Array.from(voiceSelect.options).find(o => o.value === 'Daniel');
+        if (defaultOpt) {
+          voiceSelect.value = 'Daniel';
+          localStorage.setItem('selectedVoice', 'Daniel');
+        }
+      }
     }
 
     // Function to load more examples for a word
