@@ -519,51 +519,49 @@
     cardList.addEventListener('scroll', onCardListScroll);
     window.addEventListener('scroll', onCardListScroll); // for mobile/viewport scrolling
 
-    // Load and select high-quality voices
-    let voiceMap = {};
+    // Build a language->voices map
+    const voiceMap = {}; // { en:[voices], zh:[voices] }
     function loadVoices() {
-      const voices = speechSynthesis.getVoices();
-      ['en-US', 'zh-CN'].forEach(langCode => {
-        const list = voices.filter(v => v.lang === langCode);
-        if (list.length > 0) {
-          const preferred = list.find(v => v.name.includes('Google')) || list[0];
-          voiceMap[langCode] = preferred;
-        }
+      voiceMap.en = voiceMap.zh = voiceMap.ms = [];
+      speechSynthesis.getVoices().forEach(v => {
+        const key = v.lang.split('-')[0];
+        (voiceMap[key] ??= []).push(v);
       });
     }
-    speechSynthesis.onvoiceschanged = () => {
-      loadVoices();
-      populateVoiceList();
-    };
     loadVoices();
-    populateVoiceList();
+    speechSynthesis.onvoiceschanged = () => { loadVoices(); populateVoiceList(); };
+
+    // Language detection (simple)
+    function detectLang(text) {
+      if (/[一-龥]/.test(text)) return 'zh';
+      if (/[^ -]/.test(text)) return 'ms';
+      return 'en';
+    }
+
     document.getElementById('voiceSelect').addEventListener('change', e => {
       localStorage.setItem('selectedVoice', e.target.value);
     });
-    // Initialize level selector
-    const levelSelect = document.getElementById('levelSelect');
-    levelSelect.value = selectedLevel;
-    levelSelect.onchange = e => {
-      selectedLevel = e.target.value;
-      localStorage.setItem('selectedLevel', selectedLevel);
-      // TODO: trigger AI vocab regeneration by difficulty
-    };
 
-    function speakWord(word, lang) {
+    function pickVoice(langCode) {
+      const prefix = langCode.split('-')[0];
+      const list = voiceMap[prefix] || [];
+      return list.find(v => v.localService) || list[0] || speechSynthesis.getVoices()[0];
+    }
+
+    function speakWord(text, explicitLang = null) {
       if (!window.speechSynthesis) return;
-      const utter = new SpeechSynthesisUtterance(word);
-      utter.lang = lang;
-      // Adjust rate and pitch for more natural sound
-      utter.rate = 0.9;
+      const langCode = explicitLang || detectLang(text);
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = langCode;
+      utter.rate = 0.95;
       utter.pitch = 1.0;
-      // Use user-selected voice if provided
-      const selectedVoiceName = localStorage.getItem('selectedVoice');
-      if (selectedVoiceName) {
-        const voices = speechSynthesis.getVoices();
-        const selectedVoice = voices.find(v => v.name === selectedVoiceName);
-        if (selectedVoice) utter.voice = selectedVoice;
-      } else if (voiceMap[lang]) {
-        utter.voice = voiceMap[lang];
+      // User-selected voice overrides
+      const savedName = localStorage.getItem('selectedVoice');
+      if (savedName) {
+        const savedV = speechSynthesis.getVoices().find(v => v.name === savedName);
+        if (savedV) utter.voice = savedV;
+      } else {
+        utter.voice = pickVoice(langCode);
       }
       speechSynthesis.speak(utter);
     }
