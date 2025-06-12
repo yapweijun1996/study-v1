@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
+      --header-h: 64px;
       --space-xs: 0.25rem;
       --space-sm: 0.5rem;
       --space-md: 1rem;
@@ -18,17 +19,43 @@
       background: #f7f7f9;
       color: #222;
       line-height: 1.5;
+      padding-top: var(--header-h);
     }
     .header {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: var(--header-h);
+      background: #3852e2;
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--space-md) var(--space-xl);
-      background: #3852e2;
-      color: #fff;
+      padding: 0 var(--space-xl);
       font-size: 1.3rem;
       letter-spacing: 1px;
-      flex-wrap: wrap;
+      z-index: 1000;
+      transition: transform 0.35s ease;
+    }
+    .header.hide {
+      transform: translateY(-100%);
+    }
+    .btn-gear {
+      background: none; border: none; color: inherit;
+      font-size: 1.5rem; cursor: pointer;
+      padding: var(--space-sm);
+    }
+    .settings-panel {
+      position: fixed;
+      top: var(--header-h); right: 0;
+      width: 100%; max-width: 360px;
+      background: #fff;
+      box-shadow: 0 8px 24px #0003;
+      padding: var(--space-md);
+      transform: translateY(-150%);
+      transition: transform 0.35s ease;
+      z-index: 999;
+    }
+    .settings-panel.open {
+      transform: translateY(0);
     }
     .lang-select {
       display: flex;
