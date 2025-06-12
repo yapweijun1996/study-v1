@@ -200,6 +200,28 @@
         max-width: 100%;
       }
     }
+    /* Very small phones */
+    @media (max-width: 375px) {
+      html { font-size: 90%; }
+      .header { padding: var(--space-sm) var(--space-sm); }
+      .ai-toolbar { padding: 0 var(--space-sm); }
+    }
+    /* Tablets: two-column cards */
+    @media (min-width: 768px) {
+      .container { max-width: 720px; }
+      .card-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-md);
+      }
+    }
+    /* Desktops: three-column cards */
+    @media (min-width: 1024px) {
+      .container { max-width: 960px; }
+      .card-list {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
     .chat-history { margin-bottom: 1rem; max-height: 180px; overflow-y: auto; }
     .chat-msg { margin-bottom: 0.5rem; padding: 0.5rem 0.8rem; border-radius: 0.7rem; }
     .user-msg { background: #e4eafd; text-align: right; }
