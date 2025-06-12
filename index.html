@@ -148,6 +148,10 @@
       margin-top: 0.2rem;
       background: #f6f8ff;
       resize: none;
+      box-sizing: border-box;
+    }
+    input, textarea {
+      box-sizing: border-box;
     }
     .modal .ai-reply {
       margin-top: 0.5rem;
@@ -185,6 +189,24 @@
     @keyframes bounce {
       from { transform: translateY(0);}
       to { transform: translateY(-8px);}
+    }
+    .loader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 180px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e4eafd;
+      border-top: 4px solid #3852e2;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
@@ -544,6 +566,18 @@
 
     // --- Auto-generate vocabData using Gemini AI on load ---
     async function generateVocabDataWithAI() {
+      // Show loader, hide card list
+      cardList.style.display = 'none';
+      let loaderDiv = document.getElementById('mainLoader');
+      if (!loaderDiv) {
+        loaderDiv = document.createElement('div');
+        loaderDiv.id = 'mainLoader';
+        loaderDiv.className = 'loader';
+        loaderDiv.innerHTML = '<div class="spinner"></div>';
+        cardList.parentNode.insertBefore(loaderDiv, cardList);
+      } else {
+        loaderDiv.style.display = '';
+      }
       // Compose prompt for Gemini
       const prompt = `Generate a list of 10 English words with their Chinese translations, IPA pronunciations, definitions, and example sentences in both languages. Format as a JSON array with keys: en, zh, en_pron, zh_pron, en_def, zh_def, en_example, zh_example.`;
       try {
@@ -561,13 +595,17 @@
           let data = JSON.parse(jsonStr);
           if (Array.isArray(data) && data.length > 0) {
             vocabData = data;
+            loaderDiv.style.display = 'none';
+            cardList.style.display = '';
             renderCards();
             return;
           }
         }
         throw new Error('Could not parse vocab list from AI response.');
       } catch (err) {
-        cardList.innerHTML = `<div style="padding:2rem;text-align:center;color:#c00;">Failed to load vocabulary from AI.<br>${err.message || err}</div>`;
+        loaderDiv.style.display = 'none';
+        cardList.style.display = '';
+        cardList.innerHTML = `<div style=\"padding:2rem;text-align:center;color:#c00;\">Failed to load vocabulary from AI.<br>${err.message || err}</div>`;
       }
     }
 
