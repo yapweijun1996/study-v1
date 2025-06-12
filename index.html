@@ -338,7 +338,7 @@
         <option value="medium">Medium</option>
         <option value="hard">Hard</option>
       </select>
-    </div>
+  </div>
   </section>
   <main class="container">
     <section class="card-list" id="cardList"></section>
@@ -561,6 +561,7 @@
     // Language detection (simple)
     function detectLang(text) {
       if (/[一-龥]/.test(text)) return 'zh';
+      // Detect non-ASCII for other languages (e.g. Malay)
       if (/[^ -]/.test(text)) return 'ms';
       return 'en';
     }
@@ -735,7 +736,7 @@
       // Load more examples button
       modalContent.querySelector('.load-examples-btn').onclick = () => loadMoreExamples(word);
       // Ask AI
-      const input = modalContent.querySelector('#askAiInput');
+        const input = modalContent.querySelector('#askAiInput');
       const sendBtn = modalContent.querySelector('#sendBtn');
       sendBtn.addEventListener('click', () => {
         const question = input.value.trim();
