@@ -1200,7 +1200,7 @@
     modalBg.onclick = (e) => { if (e.target === modalBg) closeModal(); };
 
       // --- Auto-generate vocabData using Gemini AI on load ---
-      async function generateVocabDataWithAI() {
+      async function generateVocabDataWithAI(append = false) {
         // Show full-screen loader overlay
         let loaderBg = document.getElementById('loaderBg');
         if (!loaderBg) {
@@ -1227,10 +1227,19 @@
             let jsonStr = text.substring(jsonStart, jsonEnd + 1);
             let data = JSON.parse(jsonStr);
             if (Array.isArray(data) && data.length > 0) {
-              vocabData = data;
-              loaderBg.style.display = 'none';
-              renderCards(true);
-              return;
+              if (append) {
+                vocabData = vocabData.concat(data);
+                loaderBg.style.display = 'none';
+                // Only render the new batch
+                cardsToShow += data.length;
+                renderCards(false);
+                return;
+              } else {
+                vocabData = data;
+                loaderBg.style.display = 'none';
+                renderCards(true);
+                return;
+              }
             }
           }
           throw new Error('Could not parse vocab list from AI response.');
@@ -1254,18 +1263,23 @@
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               if (fetching) return;
-              if (cardsToShow >= vocabData.length) {
-                observer.disconnect();
-                return;
-              }
               fetching = true;
               loaderEl.classList.remove('hidden');
-              setTimeout(() => {
-                cardsToShow += CARDS_BATCH_SIZE;
-                renderCards(false);
-                loaderEl.classList.add('hidden');
-                fetching = false;
-              }, 300);
+              // If we've shown all current cards, ask AI for more
+              if (cardsToShow >= vocabData.length) {
+                generateVocabDataWithAI(true).then(() => {
+                  loaderEl.classList.add('hidden');
+                  fetching = false;
+                });
+              } else {
+                // Just show more from existing
+                setTimeout(() => {
+                  cardsToShow += CARDS_BATCH_SIZE;
+                  renderCards(false);
+                  loaderEl.classList.add('hidden');
+                  fetching = false;
+                }, 300);
+              }
             }
           });
         }, { rootMargin: '200px' });
