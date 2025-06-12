@@ -293,12 +293,14 @@
     </div>
   </header>
   <section class="ai-toolbar" aria-label="AI Controls">
-    <div style="background:#fff;border-radius:1rem;padding:1rem 1.2rem;box-shadow:0 2px 12px #0001;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+    <div style="background:#fff;border-radius:1rem;box-shadow:0 2px 12px #0001;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
       <label for="modelSelect">Model:</label>
       <select id="modelSelect">
         <option value="gemini-2.0-flash">gemini-2.0-flash</option>
         <option value="gemma-3-27b-it">gemma-3-27b-it</option>
       </select>
+      <label for="voiceSelect">Voice:</label>
+      <select id="voiceSelect"></select>
     </div>
   </section>
   <main class="container">
@@ -516,8 +518,15 @@
         }
       });
     }
-    speechSynthesis.onvoiceschanged = loadVoices;
+    speechSynthesis.onvoiceschanged = () => {
+      loadVoices();
+      populateVoiceList();
+    };
     loadVoices();
+    populateVoiceList();
+    document.getElementById('voiceSelect').addEventListener('change', e => {
+      localStorage.setItem('selectedVoice', e.target.value);
+    });
 
     function speakWord(word, lang) {
       if (!window.speechSynthesis) return;
@@ -526,11 +535,32 @@
       // Adjust rate and pitch for more natural sound
       utter.rate = 0.9;
       utter.pitch = 1.0;
-      // Use selected voice if available
-      if (voiceMap[lang]) {
+      // Use user-selected voice if provided
+      const selectedVoiceName = localStorage.getItem('selectedVoice');
+      if (selectedVoiceName) {
+        const voices = speechSynthesis.getVoices();
+        const selectedVoice = voices.find(v => v.name === selectedVoiceName);
+        if (selectedVoice) utter.voice = selectedVoice;
+      } else if (voiceMap[lang]) {
         utter.voice = voiceMap[lang];
       }
       speechSynthesis.speak(utter);
+    }
+
+    // Populate voiceSelect dropdown
+    function populateVoiceList() {
+      const voiceSelect = document.getElementById('voiceSelect');
+      if (!voiceSelect) return;
+      const voices = speechSynthesis.getVoices();
+      voiceSelect.innerHTML = '';
+      voices.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} (${v.lang})${v.default ? ' — Default' : ''}`;
+        voiceSelect.appendChild(opt);
+      });
+      const saved = localStorage.getItem('selectedVoice');
+      if (saved) voiceSelect.value = saved;
     }
 
     function openModal(word, idx) {
