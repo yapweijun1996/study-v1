@@ -472,10 +472,32 @@
     cardList.addEventListener('scroll', onCardListScroll);
     window.addEventListener('scroll', onCardListScroll); // for mobile/viewport scrolling
 
+    // Load and select high-quality voices
+    let voiceMap = {};
+    function loadVoices() {
+      const voices = speechSynthesis.getVoices();
+      ['en-US', 'zh-CN'].forEach(langCode => {
+        const list = voices.filter(v => v.lang === langCode);
+        if (list.length > 0) {
+          const preferred = list.find(v => v.name.includes('Google')) || list[0];
+          voiceMap[langCode] = preferred;
+        }
+      });
+    }
+    speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
     function speakWord(word, lang) {
       if (!window.speechSynthesis) return;
       const utter = new SpeechSynthesisUtterance(word);
       utter.lang = lang;
+      // Adjust rate and pitch for more natural sound
+      utter.rate = 0.9;
+      utter.pitch = 1.0;
+      // Use selected voice if available
+      if (voiceMap[lang]) {
+        utter.voice = voiceMap[lang];
+      }
       speechSynthesis.speak(utter);
     }
 
