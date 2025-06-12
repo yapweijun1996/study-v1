@@ -19,7 +19,7 @@
       background: #f7f7f9;
       color: #222;
       line-height: 1.5;
-      padding-top: var(--header-h);
+      padding-top: 56px;
     }
     .header {
       position: fixed;
@@ -315,25 +315,20 @@
     }
     .hidden { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Sticky topbar helpers */
+    .topbar.hide { transform: translateY(-100%); }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
 </head>
 <body>
-  <header class="header">
-    <span>AI Vocabulary Cards</span>
-    <div class="lang-select">
-      <label for="lang1">From:</label>
-      <select id="lang1">
-        <option value="en">English</option>
-        <option value="zh">中文</option>
-      </select>
-      <span>→</span>
-      <label for="lang2">To:</label>
-      <select id="lang2">
-        <option value="zh">中文</option>
-        <option value="en">English</option>
-      </select>
-    </div>
+  <header id="topbar" class="topbar fixed left-0 right-0 top-0 h-14 px-4 flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-transform duration-300 z-30">
+    <h1 class="text-lg font-semibold select-none">AI Vocabulary Cards</h1>
+    <button id="settingsBtn" aria-label="Settings" class="p-2 rounded-full hover:bg-black/5 active:bg-black/10 transition">
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4 a1.65 1.65 0 0 0-.82.22 1.65 1.65 0 0 1-1.82-2.64 1.65 1.65 0 0 0-.22-.82 1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06 A1.65 1.65 0 0 0 4.6 9 a1.65 1.65 0 0 0-.22-.82A1.65 1.65 0 0 1 7.22 6.4 a1.65 1.65 0 0 0 .82-.22A1.65 1.65 0 0 0 9 4.6 a1.65 1.65 0 0 0-.33-1.82L8.61 2.72 a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 15 4.6 a1.65 1.65 0 0 0 .82.22 1.65 1.65 0 0 1 1.82 2.64 1.65 1.65 0 0 0 .22.82 1.65 1.65 0 0 0 1.82.33z"/>
+      </svg>
+    </button>
   </header>
   <section class="ai-toolbar" aria-label="AI Controls">
     <div style="background:#fff;border-radius:1rem;box-shadow:0 2px 12px #0001;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
@@ -344,13 +339,7 @@
       </select>
       <label for="voiceSelect">Voice:</label>
       <select id="voiceSelect"></select>
-      <label for="levelSelect">Level:</label>
-      <select id="levelSelect">
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
-  </div>
+    </div>
   </section>
   <main class="container">
     <section class="card-list" id="cardList"></section>
@@ -929,6 +918,91 @@
       }, { rootMargin: '200px' });
       observer.observe(sentinelEl);
     })();
+  </script>
+  <!-- Settings dialog -->
+  <dialog id="settingsDlg" class="w-80 max-w-full rounded-xl p-4 shadow-lg backdrop:bg-black/25">
+    <h2 class="font-semibold text-lg mb-4">Settings</h2>
+    <label class="block mb-3">
+      <span class="text-sm font-medium">Difficulty level</span>
+      <select id="levelSelect" class="w-full mt-1 px-2 py-1 border rounded">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </label>
+    <div class="flex justify-end gap-2 mt-6">
+      <button id="cancelBtn" class="px-3 py-1 rounded bg-gray-200">Cancel</button>
+      <button id="saveBtn" class="px-3 py-1 rounded bg-blue-600 text-white">Save</button>
+    </div>
+  </dialog>
+  <script type="module">
+    /* IndexedDB helper */
+    const dbPromise = (async () => {
+      return new Promise((res, rej) => {
+        const open = indexedDB.open('studyV1', 1);
+        open.onupgradeneeded = () => open.result.createObjectStore('settings');
+        open.onerror = () => rej(open.error);
+        open.onsuccess = () => res(open.result);
+      });
+    })();
+
+    async function idbGet(key) {
+      return new Promise(async (res, rej) => {
+        const tx = (await dbPromise).transaction('settings');
+        tx.objectStore('settings').get(key).onsuccess = e => res(e.target.result);
+        tx.onerror = () => rej(tx.error);
+      });
+    }
+    async function idbSet(key, val) {
+      return new Promise(async (res, rej) => {
+        const tx = (await dbPromise).transaction('settings', 'readwrite');
+        tx.objectStore('settings').put(val, key).onsuccess = () => res();
+        tx.onerror = () => rej(tx.error);
+      });
+    }
+
+    /* UI wiring */
+    const dlg = document.getElementById('settingsDlg');
+    const settingsBtn = document.getElementById('settingsBtn');
+    settingsBtn.addEventListener('click', () => dlg.showModal());
+    document.getElementById('cancelBtn').onclick = () => dlg.close();
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const prefs = { level: document.getElementById('levelSelect').value };
+      await idbSet('prefs', prefs);
+      applyPrefs(prefs);
+      dlg.close();
+    });
+
+    (async () => {
+      const prefs = await idbGet('prefs') || { level: 'easy' };
+      document.getElementById('levelSelect').value = prefs.level;
+      applyPrefs(prefs);
+    })();
+
+    function applyPrefs({ level }) {
+      selectedLevel = level;
+      localStorage.setItem('selectedLevel', level);
+      renderCards(true);
+    }
+  </script>
+  <script>
+    /* Hide/show topbar on scroll */
+    let lastY = window.scrollY;
+    let ticking = false;
+    const topbar = document.getElementById('topbar');
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currY = window.scrollY;
+          const deltaY = currY - lastY;
+          if (deltaY > 8 && currY > 60) topbar.classList.add('hide');
+          else if (deltaY < -8) topbar.classList.remove('hide');
+          lastY = currY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
   </script>
 </body>
 </html>
