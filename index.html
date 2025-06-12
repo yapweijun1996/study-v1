@@ -631,14 +631,21 @@
         };
       });
       // Ask AI
-      modalContent.querySelector('#sendBtn').onclick = () => {
-        const input = modalContent.querySelector('#askAiInput');
-        askAiAboutWord(word, input.value);
+      const input = modalContent.querySelector('#askAiInput');
+      const sendBtn = modalContent.querySelector('#sendBtn');
+      sendBtn.onclick = () => {
+        const question = input.value.trim();
+        askAiAboutWord(word, question);
+        input.value = '';
+        input.focus();
       };
       // Allow Enter key to send AI message
-      modalContent.querySelector('#askAiInput').onkeydown = (e) => {
-        if (e.key === "Enter") modalContent.querySelector('#sendBtn').click();
-      };
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendBtn.click();
+        }
+      });
       modalBg.style.display = '';
       setTimeout(() => modalContent.querySelector('#askAiInput').focus(), 250);
     }
