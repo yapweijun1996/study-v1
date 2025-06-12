@@ -5,6 +5,13 @@
   <title>Vocabulary Card Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    :root {
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+    }
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -15,7 +22,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem 2rem;
+      padding: var(--space-md) var(--space-xl);
       background: #3852e2;
       color: #fff;
       font-size: 1.3rem;
@@ -24,13 +31,13 @@
     }
     .lang-select {
       display: flex;
-      gap: 1rem;
+      gap: var(--space-md);
       align-items: center;
       flex-wrap: wrap;
     }
     .container {
       max-width: 480px;
-      margin: 2rem auto;
+      margin: var(--space-xl) auto;
       padding: 0 1rem;
     }
     .card-list {
@@ -42,12 +49,12 @@
       background: #fff;
       border-radius: 1rem;
       box-shadow: 0 4px 16px #0001;
-      padding: 1.2rem 1.2rem 1rem 1.2rem;
+      padding: var(--space-md) var(--space-md) var(--space-sm) var(--space-md);
       transition: box-shadow 0.2s;
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      gap: 0.6rem;
+      gap: var(--space-xs);
       position: relative;
       border: 2px solid transparent;
     }
@@ -116,10 +123,10 @@
       width: 340px;
       max-height: 88vh;
       overflow-y: auto;
-      padding: 2rem 1.4rem 1.2rem 1.4rem;
+      padding: var(--space-xl) var(--space-lg) var(--space-md) var(--space-lg);
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--space-md);
       animation: modalIn 0.25s cubic-bezier(.36,.76,.6,1.21);
     }
     @keyframes modalIn {
@@ -240,11 +247,14 @@
       justify-content: center;
       z-index: 1000;
     }
+    .ai-toolbar > div {
+      padding: var(--space-md) var(--space-lg);
+    }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
 </head>
 <body>
-  <div class="header">
+  <header class="header">
     <span>AI Vocabulary Cards</span>
     <div class="lang-select">
       <label for="lang1">From:</label>
@@ -259,8 +269,8 @@
         <option value="en">English</option>
       </select>
     </div>
-  </div>
-  <div class="ai-toolbar">
+  </header>
+  <section class="ai-toolbar" aria-label="AI Controls">
     <div style="background:#fff;border-radius:1rem;padding:1rem 1.2rem;box-shadow:0 2px 12px #0001;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
       <label for="modelSelect">Model:</label>
       <select id="modelSelect">
@@ -268,10 +278,10 @@
         <option value="gemma-3-27b-it">gemma-3-27b-it</option>
       </select>
     </div>
-  </div>
-  <div class="container">
-    <div class="card-list" id="cardList"></div>
-  </div>
+  </section>
+  <main class="container">
+    <section class="card-list" id="cardList"></section>
+  </main>
 
   <!-- Modal (hidden by default) -->
   <div class="modal-bg" id="modalBg" style="display:none;">
