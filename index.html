@@ -23,6 +23,7 @@
       line-height: 1.5;
       padding-top: 56px;
     }
+    html { font-size: clamp(0.875rem, 1.5vw + 0.5rem, 1.125rem); }
     .header {
       position: fixed;
       top: 0; left: 0; width: 100%; height: var(--header-h);
@@ -72,7 +73,7 @@
     }
     .card-list {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: 1fr;
       gap: var(--space-md);
     }
     .card {
@@ -283,9 +284,15 @@
       100% { transform: rotate(360deg); }
     }
     .ai-toolbar {
-      max-width: 480px;
-      margin: 1.2rem auto 0 auto;
-      padding: 0 1rem;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      max-height: 60vh; overflow-y: auto;
+      background: #fff; z-index: 20;
+    }
+    .ai-toolbar.open { transform: translateY(0); }
+    @media (min-width: 640px) {
+      .ai-toolbar { position: static; transform: none; max-height: none; background: none; }
     }
     .loader-bg {
       position: fixed;
@@ -319,12 +326,15 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     /* Sticky topbar helpers */
     .topbar.hide { transform: translateY(-100%); }
+    /* Touch-friendly hit areas */
+    .ai-toolbar button, .topbar button, .card button { min-width: 44px; min-height: 44px; }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
 </head>
 <body>
   <header id="topbar" class="topbar fixed left-0 right-0 top-0 h-14 px-4 flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-transform duration-300 z-30">
     <h1 class="text-lg font-semibold select-none">AI Vocabulary Cards</h1>
+    <button id="menuBtn" aria-label="Menu" class="p-2 rounded hover:bg-black/5 transition">☰</button>
     <button id="settingsBtn" aria-label="Settings" class="p-2 rounded-full hover:bg-black/5 active:bg-black/10 transition">
       <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3" />
@@ -945,6 +955,12 @@
       }, { rootMargin: '200px' });
       observer.observe(sentinelEl);
     })();
+
+    // Toggle mobile toolbar bottom sheet
+    const menuBtnEl = document.getElementById('menuBtn');
+    if (menuBtnEl) {
+      menuBtnEl.addEventListener('click', () => document.querySelector('.ai-toolbar').classList.toggle('open'));
+    }
   </script>
   <!-- Settings dialog -->
   <dialog id="settingsDlg" class="w-80 max-w-full rounded-xl p-4 shadow-lg backdrop:bg-black/25">
