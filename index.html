@@ -17,6 +17,7 @@
       margin: 0;
       background: #f7f7f9;
       color: #222;
+      line-height: 1.5;
     }
     .header {
       display: flex;
@@ -41,9 +42,9 @@
       padding: 0 1rem;
     }
     .card-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--space-md);
     }
     .card {
       background: #fff;
@@ -58,15 +59,12 @@
       position: relative;
       border: 2px solid transparent;
     }
-    .card:hover {
+    .card:hover, .card:focus {
       box-shadow: 0 8px 24px #3852e244;
       border: 2px solid #3852e2;
       background: #f6f8ff;
-    }
-    .card:focus {
-      outline: none;
-      border: 2px solid #3852e2;
-      background: #f6f8ff;
+      transform: scale(1.02);
+      transition: transform 0.15s;
     }
     .card-chevron {
       position: absolute;
@@ -272,6 +270,12 @@
     .ai-toolbar > div {
       padding: var(--space-md) var(--space-lg);
     }
+    .difficulty-chip {
+      position: absolute;
+      top: var(--space-xs);
+      right: var(--space-xs);
+      font-size: 0.8rem;
+    }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
 </head>
@@ -456,7 +460,7 @@
         // Pronunciation
         const pronWord = fromLang === 'en' ? word.en : word.zh;
         const pronLang = fromLang === 'en' ? 'en-US' : 'zh-CN';
-        // Card content with TTS for example sentence
+        const levelColor = selectedLevel==='easy'?'🟢':(selectedLevel==='medium'?'🟠':'🔴');
         card.innerHTML = `
           <div class="word-row">
             <span>${word[fromLang]}</span>
@@ -470,8 +474,10 @@
           <div style="font-size:0.98rem;color:#444;display:flex;align-items:center;gap:0.5rem;">
             <b>Example:</b> ${word[fromLang + '_example']}
             <button class="tts-btn" data-sentence="${word[fromLang + '_example'].replace(/"/g, '&quot;')}" data-lang="${fromLang === 'en' ? 'en-US' : 'zh-CN'}" title="Read example" style="background:#e4eafd;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;">🔊</button>
+            <button class="save-btn" title="Save word" style="background:none;border:none;font-size:1.1rem;cursor:pointer;">★</button>
           </div>
           <span class="card-chevron">&#8594;</span>
+          <span class="difficulty-chip">${levelColor}</span>
         `;
         // Pronunciation button
         card.querySelector('.pronounce-btn').onclick = (e) => {
@@ -483,6 +489,7 @@
           e.stopPropagation();
           speakWord(e.currentTarget.dataset.sentence, e.currentTarget.dataset.lang);
         };
+        card.querySelector('.save-btn').onclick = (e)=>{e.stopPropagation(); alert('Saved!');};
         card.onclick = () => openModal(word, idx);
         card.tabIndex = 0;
         cardList.appendChild(card);
