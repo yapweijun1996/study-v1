@@ -330,13 +330,110 @@
     .topbar.hide { transform: translateY(-100%); }
     /* Touch-friendly hit areas */
     .ai-toolbar button, .topbar button, .card button { min-width: 44px; min-height: 44px; }
+    .main-nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .nav-list {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .nav-link {
+      color: #222;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-link:hover,
+    .nav-link:focus {
+      color: var(--primary);
+      outline: none;
+    }
+    /* Hide menu button on desktop */
+    #menuBtn {
+      display: none;
+    }
+    /* Mobile nav drawer styles */
+    .mobile-nav {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      right: 0;
+      background: #fff;
+      box-shadow: 0 4px 16px #0002;
+      z-index: 1001;
+      padding: 1.5rem 1rem 1rem 1rem;
+      border-bottom-left-radius: 1rem;
+      border-bottom-right-radius: 1rem;
+      animation: slideDown 0.25s cubic-bezier(.36,.76,.6,1.21);
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-32px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .mobile-nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .mobile-nav-link {
+      color: #222;
+      text-decoration: none;
+      font-size: 1.15rem;
+      font-weight: 500;
+      padding: 0.5rem 0.2rem;
+      border-radius: 0.5rem;
+      transition: background 0.2s, color 0.2s;
+    }
+    .mobile-nav-link:hover,
+    .mobile-nav-link:focus {
+      background: #e4eafd;
+      color: var(--primary);
+      outline: none;
+    }
+    /* Responsive: hide main nav, show menu button on mobile */
+    @media (max-width: 800px) {
+      .main-nav {
+        display: none;
+      }
+      #menuBtn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    /* Marked.js markdown output for .ai-reply */
+    .ai-reply h1,
+    .ai-reply h2,
+    .ai-reply h3,
+    .ai-reply h4,
+    .ai-reply h5,
+    .ai-reply h6,
+    .ai-reply p {
+      margin: 0;
+      padding: 0;
+    }
   </style>
   <script src="script_top.js"></script><!--- apiKey at here -->
 </head>
 <body>
   <header id="topbar" class="topbar fixed left-0 right-0 top-0 h-14 px-4 flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-transform duration-300 z-30">
     <h1 class="text-lg font-semibold select-none">AI Vocabulary Cards</h1>
-    <button id="menuBtn" aria-label="Menu" class="p-2 rounded hover:bg-black/5 transition">☰</button>
+    <nav id="mainNav" class="main-nav" aria-label="Main navigation">
+      <ul class="nav-list">
+        <li><a href="#" class="nav-link">Home</a></li>
+        <li><a href="#" class="nav-link">About</a></li>
+        <li><a href="#" class="nav-link">Contact</a></li>
+      </ul>
+    </nav>
+    <button id="menuBtn" aria-label="Menu" class="p-2 rounded hover:bg-black/5 transition" aria-controls="mobileNav" aria-expanded="false">☰</button>
     <button id="settingsBtn" aria-label="Settings" class="p-2 rounded-full hover:bg-black/5 active:bg-black/10 transition">
       <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3" />
@@ -358,6 +455,15 @@
       <!-- Dynamic modal content inserted by JS -->
     </div>
   </div>
+
+  <!-- Mobile nav drawer -->
+  <nav id="mobileNav" class="mobile-nav" aria-label="Mobile navigation" hidden>
+    <ul class="mobile-nav-list">
+      <li><a href="#" class="mobile-nav-link">Home</a></li>
+      <li><a href="#" class="mobile-nav-link">About</a></li>
+      <li><a href="#" class="mobile-nav-link">Contact</a></li>
+    </ul>
+  </nav>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -971,6 +1077,33 @@
           }
         });
       }
+
+      // Mobile nav drawer logic
+      const menuBtn = document.getElementById('menuBtn');
+      const mobileNav = document.getElementById('mobileNav');
+      menuBtn.addEventListener('click', () => {
+        const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
+        menuBtn.setAttribute('aria-expanded', !expanded);
+        if (mobileNav.hasAttribute('hidden')) {
+          mobileNav.removeAttribute('hidden');
+          // Trap focus for accessibility (optional, advanced)
+        } else {
+          mobileNav.setAttribute('hidden', '');
+        }
+      });
+      // Hide mobile nav when clicking outside or on a link
+      mobileNav.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mobile-nav-link')) {
+          mobileNav.setAttribute('hidden', '');
+          menuBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!mobileNav.hasAttribute('hidden') && !mobileNav.contains(e.target) && e.target !== menuBtn) {
+          mobileNav.setAttribute('hidden', '');
+          menuBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
     });
   </script>
   <!-- Settings dialog -->
