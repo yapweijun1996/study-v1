@@ -240,7 +240,8 @@
     // State
     let fromLang = 'en', toLang = 'zh';
     let selectedModel = sessionStorage.getItem('geminiModel') || 'gemini-2.0-flash';
-    let chatHistory = [];
+    // Per-word chat history: { [wordKey]: [messages] }
+    let chatHistory = {};
 
     // Elements
     const cardList = document.getElementById('cardList');
@@ -274,14 +275,16 @@
     };
 
     // Start chat session for the selected model
-    async function startChatSession(selectedModel) {
+    async function startChatSession(selectedModel, wordKey) {
       return {
         sendMessage: async function(messageData) {
           let userMessage = typeof messageData === "string"
             ? { role: "user", parts: [{ text: messageData }] }
             : messageData;
+          // Use per-word chat history
+          if (!chatHistory[wordKey]) chatHistory[wordKey] = [];
           const requestBody = {
-            contents: [...chatHistory, userMessage],
+            contents: [...chatHistory[wordKey], userMessage],
             generationConfig
           };
           const url = "https://generativelanguage.googleapis.com/v1beta/models/" + selectedModel +
@@ -299,7 +302,7 @@
               role: "model",
               parts: result.candidates[0].content.parts
             };
-            chatHistory.push(userMessage, modelResponse);
+            chatHistory[wordKey].push(userMessage, modelResponse);
           } else {
             throw new Error("No response from API");
           }
@@ -427,8 +430,10 @@
       replyDiv.textContent = "Thinking...";
       // Compose prompt
       const prompt = `You are an AI language tutor. The user is asking about the word "${word.en}" (Chinese: ${word.zh}). Provide a helpful, clear answer.\n\nWord details:\n- English: ${word.en}\n- Chinese: ${word.zh}\n- English definition: ${word.en_def}\n- Chinese definition: ${word.zh_def}\n- English example: ${word.en_example}\n- Chinese example: ${word.zh_example}\n\nUser question: ${question}`;
-      // Call Gemini API
-      startChatSession(selectedModel).then(session => {
+      // Use a unique key for the word (en+zh)
+      const wordKey = word.en + '|' + word.zh;
+      // Call Gemini API with per-word chat history
+      startChatSession(selectedModel, wordKey).then(session => {
         return session.sendMessage(prompt);
       }).then(result => {
         let reply = '';
