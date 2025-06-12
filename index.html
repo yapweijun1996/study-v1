@@ -1077,42 +1077,56 @@
     settingsBtn.addEventListener('click', () => dlg.showModal());
     document.getElementById('cancelBtn').onclick = () => dlg.close();
     document.getElementById('saveBtn').addEventListener('click', async () => {
-      const prefs = {
-        level: document.getElementById('levelSelect').value,
-        theme: document.getElementById('themeSelect').value,
-        from: document.getElementById('lang1').value,
-        to: document.getElementById('lang2').value,
-        model: document.getElementById('modelSelect').value,
-        voice: document.getElementById('voiceSelect').value
-      };
+      // Gather prefs only if elements exist
+      const prefs = {};
+      const lvlEl = document.getElementById('levelSelect'); if (lvlEl) prefs.level = lvlEl.value;
+      const themeEl = document.getElementById('themeSelect'); if (themeEl) prefs.theme = themeEl.value;
+      const fromEl = document.getElementById('lang1'); if (fromEl) prefs.from = fromEl.value;
+      const toEl = document.getElementById('lang2'); if (toEl) prefs.to = toEl.value;
+      const modelEl = document.getElementById('modelSelect'); if (modelEl) prefs.model = modelEl.value;
+      const voiceEl = document.getElementById('voiceSelect'); if (voiceEl) prefs.voice = voiceEl.value;
       await idbSet('prefs', prefs);
       applyPrefs(prefs);
       dlg.close();
     });
 
     (async () => {
-      const prefs = await idbGet('prefs') || { level: 'easy', theme: 'system', from: 'en', to: 'zh', model: 'gemini-2.0-flash', voice: localStorage.getItem('selectedVoice') || 'Daniel' };
-      document.getElementById('levelSelect').value = prefs.level;
-      document.getElementById('lang1').value = prefs.from;
-      document.getElementById('lang2').value = prefs.to;
-      document.getElementById('modelSelect').value = prefs.model;
-      document.getElementById('voiceSelect').value = prefs.voice;
-      document.getElementById('themeSelect').value = prefs.theme;
+      const defaultVoice = localStorage.getItem('selectedVoice') || 'Daniel';
+      const prefs = await idbGet('prefs') || { level: 'easy', theme: 'system', from: 'en', to: 'zh', model: 'gemini-2.0-flash', voice: defaultVoice };
+      const lvlInit = document.getElementById('levelSelect'); if (lvlInit && prefs.level) lvlInit.value = prefs.level;
+      const fromInit = document.getElementById('lang1'); if (fromInit && prefs.from) fromInit.value = prefs.from;
+      const toInit = document.getElementById('lang2'); if (toInit && prefs.to) toInit.value = prefs.to;
+      const modelInit = document.getElementById('modelSelect'); if (modelInit && prefs.model) modelInit.value = prefs.model;
+      const voiceInit = document.getElementById('voiceSelect'); if (voiceInit && prefs.voice) voiceInit.value = prefs.voice;
+      const themeInit = document.getElementById('themeSelect'); if (themeInit && prefs.theme) themeInit.value = prefs.theme;
       applyPrefs(prefs);
     })();
 
     function applyPrefs({ level, theme, from, to, model, voice }) {
-      selectedLevel = level;
-      localStorage.setItem('selectedLevel', level);
+      if (level) {
+        selectedLevel = level;
+        localStorage.setItem('selectedLevel', level);
+      }
       // Apply language/model/voice
-      fromLang = from; toLang = to;
-      localStorage.setItem('fromLang', fromLang);
-      localStorage.setItem('toLang', toLang);
-      modelSelect.value = model;
-      selectedModel = model;
-      localStorage.setItem('geminiModel', model);
-      voiceSelect.value = voice;
-      localStorage.setItem('selectedVoice', voice);
+      if (from) {
+        fromLang = from;
+        localStorage.setItem('fromLang', fromLang);
+      }
+      if (to) {
+        toLang = to;
+        localStorage.setItem('toLang', toLang);
+      }
+      if (model) {
+        const modelEl = document.getElementById('modelSelect');
+        if (modelEl) modelEl.value = model;
+        selectedModel = model;
+        localStorage.setItem('geminiModel', model);
+      }
+      if (voice) {
+        const voiceEl = document.getElementById('voiceSelect');
+        if (voiceEl) voiceEl.value = voice;
+        localStorage.setItem('selectedVoice', voice);
+      }
       // Theme override
       if (theme === 'system') {
         document.documentElement.removeAttribute('data-theme');
